@@ -1,25 +1,14 @@
 import 'module-alias/register';
 import 'dotenv/config';
-import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
 
-import createDatabaseConnection from 'database/createConnection';
 import { addRespondToResponse } from 'middleware/response';
 import { authenticateUser } from 'middleware/authentication';
 import { handleError } from 'middleware/errors';
 import { RouteNotFoundError } from 'errors';
 
 import { attachPublicRoutes, attachPrivateRoutes } from './routes';
-
-const establishDatabaseConnection = async (): Promise<void> => {
-  try {
-    await createDatabaseConnection();
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
 
 const initializeExpress = (): void => {
   const app = express();
@@ -42,9 +31,4 @@ const initializeExpress = (): void => {
   app.listen(process.env.PORT || 3000);
 };
 
-const initializeApp = async (): Promise<void> => {
-  await establishDatabaseConnection();
-  initializeExpress();
-};
-
-initializeApp();
+initializeExpress();

@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  url         String?  @db.VarChar
+  description String?  @db.Text
+  category    String   @db.VarChar
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  issues      Issue[]
+  users       User[]
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(100)
+  email     String    @db.VarChar(200)
+  avatarUrl String    @db.VarChar(2000)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  projectId Int
+  project   Project   @relation(fields: [projectId], references: [id])
+  comments  Comment[]
+  issues    Issue[]   @relation("IssueUsers")
+}
+
+model Issue {
+  id              Int       @id @default(autoincrement())
+  title           String    @db.VarChar(200)
+  type            String    @db.VarChar
+  status          String    @db.VarChar
+  priority        String    @db.VarChar
+  listPosition    Float
+  description     String?   @db.Text
+  descriptionText String?   @db.Text
+  estimate        Int?
+  timeSpent       Int?
+  timeRemaining   Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  reporterId      Int
+  projectId       Int
+  project         Project   @relation(fields: [projectId], references: [id])
+  comments        Comment[]
+  users           User[]    @relation("IssueUsers")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    Int
+  issueId   Int
+  user      User     @relation(fields: [userId], references: [id])
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+}

@@ -1,8 +1,7 @@
 import { pick } from 'lodash';
+import { Issue } from '@prisma/client';
 
-import { Issue } from 'entities';
-
-export const issuePartial = (issue: Issue): Partial<Issue> =>
+export const issuePartial = (issue: Issue) =>
   pick(issue, [
     'id',
     'title',
@@ -12,5 +11,4 @@ export const issuePartial = (issue: Issue): Partial<Issue> =>
     'listPosition',
     'createdAt',
     'updatedAt',
-    'userIds',
   ]);
