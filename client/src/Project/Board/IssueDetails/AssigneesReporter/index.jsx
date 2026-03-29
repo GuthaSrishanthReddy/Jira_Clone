@@ -31,10 +31,14 @@ const ProjectBoardIssueDetailsAssigneesReporter = ({ issue, updateIssue, project
         onChange={userIds => {
           updateIssue({ userIds, users: userIds.map(getUserById) });
         }}
-        renderValue={({ value: userId, removeOptionValue }) =>
-          renderUser(getUserById(userId), true, removeOptionValue)
-        }
-        renderOption={({ value: userId }) => renderUser(getUserById(userId), false)}
+        renderValue={({ value: userId, removeOptionValue }) => {
+          const user = getUserById(userId);
+          return user ? renderUser(user, true, removeOptionValue) : null;
+        }}
+        renderOption={({ value: userId }) => {
+          const user = getUserById(userId);
+          return user ? renderUser(user, false) : null;
+        }}
       />
 
       <SectionTitle>Reporter</SectionTitle>
@@ -46,8 +50,14 @@ const ProjectBoardIssueDetailsAssigneesReporter = ({ issue, updateIssue, project
         value={issue.reporterId}
         options={userOptions}
         onChange={userId => updateIssue({ reporterId: userId })}
-        renderValue={({ value: userId }) => renderUser(getUserById(userId), true)}
-        renderOption={({ value: userId }) => renderUser(getUserById(userId))}
+        renderValue={({ value: userId }) => {
+          const user = getUserById(userId);
+          return user ? renderUser(user, true) : null;
+        }}
+        renderOption={({ value: userId }) => {
+          const user = getUserById(userId);
+          return user ? renderUser(user) : null;
+        }}
       />
     </Fragment>
   );

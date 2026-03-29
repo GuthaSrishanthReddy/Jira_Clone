@@ -1,7 +1,6 @@
 export const getTextContentsFromHtmlString = html => {
-  const el = document.createElement('div');
-  el.innerHTML = html;
-  return el.textContent;
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent;
 };
 
 export const copyToClipboard = value => {
@@ -13,6 +12,11 @@ export const copyToClipboard = value => {
   document.body.removeChild($textarea);
 };
 
-export const isFocusedElementEditable = () =>
-  !!document.activeElement.getAttribute('contenteditable') ||
-  ['TEXTAREA', 'INPUT'].includes(document.activeElement.tagName);
+export const isFocusedElementEditable = () => {
+  const { activeElement } = document;
+  return (
+    !!activeElement &&
+    (!!activeElement.getAttribute('contenteditable') ||
+      ['TEXTAREA', 'INPUT'].includes(activeElement.tagName))
+  );
+};

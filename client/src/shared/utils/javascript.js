@@ -22,4 +22,4 @@ export const updateArrayItemById = (arr, itemId, fields) => {
 };
 
 export const sortByNewest = (items, sortField) =>
-  items.sort((a, b) => -a[sortField].localeCompare(b[sortField]));
+  [...items].sort((a, b) => -a[sortField].localeCompare(b[sortField]));

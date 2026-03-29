@@ -19,8 +19,9 @@ const useOnOutsideClick = (
     const handleMouseUp = event => {
       const isAnyIgnoredElementAncestorOfTarget = $ignoredElementRefsMemoized.some(
         $elementRef =>
-          $elementRef.current.contains($mouseDownTargetRef.current) ||
-          $elementRef.current.contains(event.target),
+          $elementRef.current &&
+          ($elementRef.current.contains($mouseDownTargetRef.current) ||
+            $elementRef.current.contains(event.target)),
       );
       if (event.button === 0 && !isAnyIgnoredElementAncestorOfTarget) {
         onOutsideClick();

@@ -58,7 +58,7 @@ Form.initialValues = (data, getFieldValues) =>
   });
 
 Form.handleAPIError = (error, form) => {
-  if (error.data.fields) {
+  if (error.data && error.data.fields) {
     form.setErrors(error.data.fields);
   } else {
     toast.error(error);

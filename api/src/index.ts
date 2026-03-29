@@ -16,14 +16,15 @@ const establishDatabaseConnection = async (): Promise<void> => {
   try {
     await createDatabaseConnection();
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    throw error;
   }
 };
 
 const initializeExpress = (): void => {
   const app = express();
 
-  app.use(cors());
+  app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:8081' }));
   app.use(express.json());
   app.use(express.urlencoded());
 

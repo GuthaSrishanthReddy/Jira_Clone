@@ -100,7 +100,7 @@ const ProjectIssueCreate = ({ project, fetchProject, onCreate, modalClose }) => 
           isMulti
           name="userIds"
           label="Assignees"
-          tio="People who are responsible for dealing with this issue."
+          tip="People who are responsible for dealing with this issue."
           options={userOptions(project)}
           renderOption={renderUser(project)}
           renderValue={renderUser(project)}
@@ -154,6 +154,7 @@ const renderPriority = ({ value: priority }) => (
 
 const renderUser = project => ({ value: userId, removeOptionValue }) => {
   const user = project.users.find(({ id }) => id === userId);
+  if (!user) return null;
 
   return (
     <SelectItem

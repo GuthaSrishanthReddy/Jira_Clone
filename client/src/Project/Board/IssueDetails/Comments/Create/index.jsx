@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import api from 'shared/utils/api';
@@ -19,6 +19,9 @@ const ProjectBoardIssueDetailsCommentsCreate = ({ issueId, fetchIssue }) => {
   const [isCreating, setCreating] = useState(false);
   const [body, setBody] = useState('');
 
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const { currentUser } = useCurrentUser();
 
   const handleCommentCreate = async () => {
@@ -26,11 +29,15 @@ const ProjectBoardIssueDetailsCommentsCreate = ({ issueId, fetchIssue }) => {
       setCreating(true);
       await api.post(`/comments`, { body, issueId, userId: currentUser.id });
       await fetchIssue();
-      setFormOpen(false);
-      setCreating(false);
-      setBody('');
+      if (isMountedRef.current) {
+        setFormOpen(false);
+        setCreating(false);
+        setBody('');
+      }
     } catch (error) {
-      toast.error(error);
+      if (isMountedRef.current) {
+        toast.error(error);
+      }
     }
   };
 

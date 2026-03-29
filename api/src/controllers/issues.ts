@@ -49,7 +49,7 @@ const calculateListPosition = async ({ projectId, status }: Issue): Promise<numb
   const listPositions = issues.map(({ listPosition }) => listPosition);
 
   if (listPositions.length > 0) {
-    return Math.min(...listPositions) - 1;
+    return Math.min(...listPositions) / 2;
   }
   return 1;
 };
