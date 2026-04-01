@@ -1,66 +1,90 @@
+// Prisma Client configuration
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js" // Generates Prisma Client for JavaScript/TypeScript
 }
 
+// Database connection setup
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider  = "postgresql" // Using PostgreSQL database
+  url       = env("DATABASE_URL") // Main database connection string
+  directUrl = env("DIRECT_URL")   // Direct connection (used for migrations, etc.)
 }
 
+// Represents a project in the system
 model Project {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(100)
-  url         String?  @db.VarChar
-  description String?  @db.Text
-  category    String   @db.VarChar
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  issues      Issue[]
-  users       User[]
+  id          Int      @id @default(autoincrement()) // Primary key
+  name        String   @db.VarChar(100)              // Project name (max 100 chars)
+  url         String?  @db.VarChar                  // Optional project URL
+  description String?  @db.Text                     // Optional detailed description
+  category    String   @db.VarChar                  // Project category (e.g., software, marketing)
+  createdAt   DateTime @default(now())              // Timestamp when created
+  updatedAt   DateTime @updatedAt                   // Auto-updated timestamp
+
+  // Relations
+  issues      Issue[] // One project can have many issues
+  users       User[]  // One project can have many users
 }
 
+// Represents a user assigned to a project
 model User {
-  id        Int       @id @default(autoincrement())
-  name      String    @db.VarChar(100)
-  email     String    @db.VarChar(200)
-  avatarUrl String    @db.VarChar(2000)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  projectId Int
-  project   Project   @relation(fields: [projectId], references: [id])
-  comments  Comment[]
-  issues    Issue[]   @relation("IssueUsers")
+  id        Int       @id @default(autoincrement()) // Primary key
+  name      String    @db.VarChar(100)              // User's name
+  email     String    @db.VarChar(200)              // User's email
+  avatarUrl String    @db.VarChar(2000)             // Profile image URL
+  createdAt DateTime  @default(now())               // Creation timestamp
+  updatedAt DateTime  @updatedAt                    // Auto-updated timestamp
+
+  // Foreign key
+  projectId Int                                     // Associated project ID
+  project   Project   @relation(fields: [projectId], references: [id]) // Relation to Project
+
+  // Relations
+  comments  Comment[] // User can write many comments
+  issues    Issue[]   @relation("IssueUsers") // Many-to-many relation with issues
 }
 
+// Represents an issue/task within a project
 model Issue {
-  id              Int       @id @default(autoincrement())
-  title           String    @db.VarChar(200)
-  type            String    @db.VarChar
-  status          String    @db.VarChar
-  priority        String    @db.VarChar
-  listPosition    Float
-  description     String?   @db.Text
-  descriptionText String?   @db.Text
-  estimate        Int?
-  timeSpent       Int?
-  timeRemaining   Int?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  reporterId      Int
-  projectId       Int
-  project         Project   @relation(fields: [projectId], references: [id])
-  comments        Comment[]
-  users           User[]    @relation("IssueUsers")
+  id              Int       @id @default(autoincrement()) // Primary key
+  title           String    @db.VarChar(200)              // Issue title
+  type            String    @db.VarChar                  // Type (bug, task, story, etc.)
+  status          String    @db.VarChar                  // Status (open, in progress, done)
+  priority        String    @db.VarChar                  // Priority level (low, medium, high)
+  listPosition    Float                                 // Position for ordering in UI
+
+  description     String?   @db.Text                     // Rich description (possibly markdown)
+  descriptionText String?   @db.Text                     // Plain text version of description
+
+  estimate        Int?                                   // Estimated time (e.g., hours)
+  timeSpent       Int?                                   // Time already spent
+  timeRemaining   Int?                                   // Remaining time estimate
+
+  createdAt       DateTime  @default(now())              // Creation timestamp
+  updatedAt       DateTime  @updatedAt                   // Auto-updated timestamp
+
+  // Foreign keys
+  reporterId      Int                                   // ID of the reporting user
+  projectId       Int                                   // Associated project ID
+
+  // Relations
+  project         Project   @relation(fields: [projectId], references: [id]) // Belongs to project
+  comments        Comment[]                             // One issue can have many comments
+  users           User[]    @relation("IssueUsers")      // Many-to-many assigned users
 }
 
+// Represents comments on issues
 model Comment {
-  id        Int      @id @default(autoincrement())
-  body      String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    Int
-  issueId   Int
-  user      User     @relation(fields: [userId], references: [id])
-  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  id        Int      @id @default(autoincrement()) // Primary key
+  body      String   @db.Text                     // Comment content
+  createdAt DateTime @default(now())              // Creation timestamp
+  updatedAt DateTime @updatedAt                   // Auto-updated timestamp
+
+  // Foreign keys
+  userId    Int                                   // Author of the comment
+  issueId   Int                                   // Related issue
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id]) // Comment author
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade) 
+  // Cascade delete ensures comments are removed if the issue is deleted
 }
