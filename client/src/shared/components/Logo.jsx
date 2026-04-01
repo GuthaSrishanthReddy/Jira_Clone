@@ -6,12 +6,7 @@ const propTypes = {
   size: PropTypes.number,
 };
 
-const defaultProps = {
-  className: undefined,
-  size: 28,
-};
-
-const Logo = ({ className, size }) => (
+const Logo = ({ className, size = 28 }) => (
   <span className={className}>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 75.76 75.76" width={size}>
       <defs>
@@ -57,6 +52,5 @@ const Logo = ({ className, size }) => (
 );
 
 Logo.propTypes = propTypes;
-Logo.defaultProps = defaultProps;
 
 export default Logo;

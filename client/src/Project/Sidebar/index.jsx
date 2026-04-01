@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { NavLink, useRouteMatch } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 import { ProjectCategoryCopy } from 'shared/constants/projects';
 import { Icon, ProjectAvatar } from 'shared/components';
@@ -21,36 +21,32 @@ const propTypes = {
   project: PropTypes.object.isRequired,
 };
 
-const ProjectSidebar = ({ project }) => {
-  const match = useRouteMatch();
+const ProjectSidebar = ({ project }) => (
+  <Sidebar>
+    <ProjectInfo>
+      <ProjectAvatar />
+      <ProjectTexts>
+        <ProjectName>{project.name}</ProjectName>
+        <ProjectCategory>{ProjectCategoryCopy[project.category]} project</ProjectCategory>
+      </ProjectTexts>
+    </ProjectInfo>
 
-  return (
-    <Sidebar>
-      <ProjectInfo>
-        <ProjectAvatar />
-        <ProjectTexts>
-          <ProjectName>{project.name}</ProjectName>
-          <ProjectCategory>{ProjectCategoryCopy[project.category]} project</ProjectCategory>
-        </ProjectTexts>
-      </ProjectInfo>
+    {renderLinkItem('Kanban Board', 'board', '/project/board')}
+    {renderLinkItem('Project settings', 'settings', '/project/settings')}
+    <Divider />
+    {renderLinkItem('Releases', 'shipping')}
+    {renderLinkItem('Issues and filters', 'issues')}
+    {renderLinkItem('Pages', 'page')}
+    {renderLinkItem('Reports', 'reports')}
+    {renderLinkItem('Components', 'component')}
+  </Sidebar>
+);
 
-      {renderLinkItem(match, 'Kanban Board', 'board', '/board')}
-      {renderLinkItem(match, 'Project settings', 'settings', '/settings')}
-      <Divider />
-      {renderLinkItem(match, 'Releases', 'shipping')}
-      {renderLinkItem(match, 'Issues and filters', 'issues')}
-      {renderLinkItem(match, 'Pages', 'page')}
-      {renderLinkItem(match, 'Reports', 'reports')}
-      {renderLinkItem(match, 'Components', 'component')}
-    </Sidebar>
-  );
-};
-
-const renderLinkItem = (match, text, iconType, path) => {
+const renderLinkItem = (text, iconType, path) => {
   const isImplemented = !!path;
 
   const linkItemProps = isImplemented
-    ? { as: NavLink, exact: true, to: `${match.path}${path}` }
+    ? { as: NavLink, to: path, end: true }
     : { as: 'div' };
 
   return (

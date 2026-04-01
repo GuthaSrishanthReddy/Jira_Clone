@@ -6,15 +6,16 @@ export default createGlobalStyle`
   html, body, #root {
     height: 100%;
     min-height: 100%;
-    min-width: 768px;
+    min-width: 1000px;
   }
 
   body {
     color: ${color.textDarkest};
     -webkit-tap-highlight-color: transparent;
-    line-height: 1.2;
-    ${font.size(16)}
+    line-height: 1.5;
+    ${font.size(15)}
     ${font.regular}
+    background: ${color.backgroundLightest};
   }
 
   #root {
@@ -57,7 +58,6 @@ export default createGlobalStyle`
     border: none;
   }
 
-  /* Workaround for IE11 focus highlighting for select elements */
   select::-ms-value {
     background: none;
     color: #42413d;
@@ -69,7 +69,7 @@ export default createGlobalStyle`
       outline: none;
     }
     &:disabled {
-      opacity: 1;
+      opacity: 0.6;
     }
   }
   [role="button"], button, input, textarea {
@@ -87,14 +87,14 @@ export default createGlobalStyle`
   }
 
   p {
-    line-height: 1.4285;
+    line-height: 1.6;
     a {
       ${mixin.link()}
     }
   }
 
   textarea {
-    line-height: 1.4285;
+    line-height: 1.6;
   }
 
   body, select {
@@ -107,4 +107,15 @@ export default createGlobalStyle`
   }
 
   ${mixin.placeholderColor(color.textLight)}
+
+  /* Focus ring for accessibility */
+  :focus-visible {
+    outline: 2px solid ${color.primary};
+    outline-offset: 2px;
+  }
+
+  /* Smooth scroll */
+  html {
+    scroll-behavior: smooth;
+  }
 `;

@@ -1,20 +1,19 @@
 import React from 'react';
-import { Router, Switch, Route, Redirect } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-import history from 'browserHistory';
 import Project from 'Project';
 import Authenticate from 'Auth/Authenticate';
 import PageError from 'shared/components/PageError';
 
-const Routes = () => (
-  <Router history={history}>
-    <Switch>
-      <Redirect exact from="/" to="/project" />
-      <Route path="/authenticate" component={Authenticate} />
-      <Route path="/project" component={Project} />
-      <Route component={PageError} />
-    </Switch>
-  </Router>
+const AppRoutes = () => (
+  <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <Routes>
+      <Route path="/" element={<Navigate replace to="/project" />} />
+      <Route path="/authenticate" element={<Authenticate />} />
+      <Route path="/project/*" element={<Project />} />
+      <Route path="*" element={<PageError />} />
+    </Routes>
+  </BrowserRouter>
 );
 
-export default Routes;
+export default AppRoutes;
