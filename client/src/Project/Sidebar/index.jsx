@@ -14,7 +14,6 @@ import {
   Divider,
   LinkItem,
   LinkText,
-  NotImplemented,
 } from './Styles';
 
 const propTypes = {
@@ -31,29 +30,25 @@ const ProjectSidebar = ({ project }) => (
       </ProjectTexts>
     </ProjectInfo>
 
+    {renderLinkItem('Dashboard', 'board', '/project/dashboard')}
+    {renderLinkItem('Activity', 'reports', '/project/activity')}
+    <Divider />
     {renderLinkItem('Kanban Board', 'board', '/project/board')}
+    {renderLinkItem('Profile', 'user', '/project/profile')}
     {renderLinkItem('Project settings', 'settings', '/project/settings')}
     <Divider />
-    {renderLinkItem('Releases', 'shipping')}
-    {renderLinkItem('Issues and filters', 'issues')}
-    {renderLinkItem('Pages', 'page')}
-    {renderLinkItem('Reports', 'reports')}
-    {renderLinkItem('Components', 'component')}
+    {renderLinkItem('Issues and filters', 'issues', '/project/issues')}
+    {renderLinkItem('Pages', 'page', '/project/pages')}
+    {renderLinkItem('Reports', 'reports', '/project/reports')}
+    {renderLinkItem('Components', 'component', '/project/components')}
   </Sidebar>
 );
 
 const renderLinkItem = (text, iconType, path) => {
-  const isImplemented = !!path;
-
-  const linkItemProps = isImplemented
-    ? { as: NavLink, to: path, end: true }
-    : { as: 'div' };
-
   return (
-    <LinkItem {...linkItemProps}>
+    <LinkItem as={NavLink} to={path} end>
       <Icon type={iconType} />
       <LinkText>{text}</LinkText>
-      {!isImplemented && <NotImplemented>Not implemented</NotImplemented>}
     </LinkItem>
   );
 };

@@ -75,13 +75,10 @@ export const LinkItem = styled.div`
   ${mixin.clickable}
   color: ${color.textMedium};
   transition: background 0.15s, color 0.15s;
-  ${props =>
-    !props.to
-      ? `cursor: not-allowed; opacity: 0.55;`
-      : `&:hover {
-           background: ${color.backgroundLightest};
-           color: ${color.textDark};
-         }`}
+  &:hover {
+    background: ${color.backgroundLightest};
+    color: ${color.textDark};
+  }
   i {
     font-size: 18px;
     width: 20px;
@@ -102,23 +99,4 @@ export const LinkText = styled.span`
   padding: 0 0 0 12px;
   ${font.size(14)};
   ${font.medium};
-`;
-
-export const NotImplemented = styled.div`
-  display: inline-block;
-  position: absolute;
-  right: 12px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: ${color.textLight};
-  background: ${color.backgroundLight};
-  opacity: 0;
-  ${font.size(10.5)};
-  ${font.bold}
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  pointer-events: none;
-  ${LinkItem}:hover & {
-    opacity: 1;
-  }
 `;

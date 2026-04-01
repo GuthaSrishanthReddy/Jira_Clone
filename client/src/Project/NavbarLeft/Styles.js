@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 
 import { font, sizes, color, mixin, zIndexValues } from 'shared/utils/styles';
-import { Logo } from 'shared/components';
+import { Logo, Avatar } from 'shared/components';
 
 export const NavLeft = styled.aside`
   z-index: ${zIndexValues.navLeft};
@@ -102,5 +102,87 @@ export const ItemText = styled.span`
     visibility: visible;
     opacity: 1;
     transform: translateX(0);
+  }
+`;
+
+export const AccountSection = styled.div`
+  margin: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+`;
+
+export const ProfileCard = styled(NavLink)`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.92);
+  transition: background 0.15s, transform 0.15s;
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  &.active {
+    background: rgba(255, 255, 255, 0.12);
+  }
+`;
+
+export const ProfileAvatar = styled(Avatar)`
+  flex-shrink: 0;
+`;
+
+export const ProfileMeta = styled.div`
+  min-width: 0;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.15s, visibility 0.15s, transform 0.15s;
+  ${NavLeft}:hover & {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(0);
+  }
+`;
+
+export const ProfileName = styled.div`
+  color: #ffffff;
+  ${font.size(13)}
+  ${font.bold}
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+export const ProfileRole = styled.div`
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.65);
+  ${font.size(11.5)}
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+export const SignOutButton = styled.button`
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.78);
+  text-align: left;
+  ${font.size(12.5)}
+  ${font.medium}
+  transition: background 0.15s, color 0.15s;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateX(-6px);
+  ${NavLeft}:hover & {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(0);
+  }
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
   }
 `;
