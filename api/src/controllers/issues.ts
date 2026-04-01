@@ -65,10 +65,10 @@ export const getIssueWithUsersAndComments = catchErrors(async (req, res) => {
 
 export const create = catchErrors(async (req, res) => {
   const body = req.body;
-  const errors = generateErrors(body, issueValidations);
+  const listPosition = await calculateListPosition(body.projectId, body.status);
+  const errors = generateErrors({ ...body, listPosition }, issueValidations);
   if (Object.keys(errors).length > 0) throw new BadUserInputError({ fields: errors });
 
-  const listPosition = await calculateListPosition(body.projectId, body.status);
   const descriptionText = body.description ? striptags(body.description) : null;
 
   const issue = await prisma.issue.create({

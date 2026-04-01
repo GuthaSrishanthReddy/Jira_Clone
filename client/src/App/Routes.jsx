@@ -8,7 +8,7 @@ import PageError from 'shared/components/PageError';
 const AppRoutes = () => (
   <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
     <Routes>
-      <Route path="/" element={<Navigate replace to="/project" />} />
+      <Route path="/" element={<Authenticate />} />
       <Route path="/authenticate" element={<Authenticate />} />
       <Route path="/project/*" element={<Project />} />
       <Route path="*" element={<PageError />} />

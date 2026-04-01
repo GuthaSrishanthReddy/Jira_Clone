@@ -2,6 +2,7 @@ import { catchErrors } from 'errors';
 import { EntityNotFoundError, BadUserInputError } from 'errors';
 import { generateErrors } from 'utils/validation';
 import is from 'utils/validation';
+import { serializeDemoUser } from 'utils/demoUsers';
 import prisma from 'database/prisma';
 import { issuePartial } from 'serializers/issues';
 import { ProjectCategory } from 'constants/projects';
@@ -28,6 +29,7 @@ export const getProjectWithUsersAndIssues = catchErrors(async (req, res) => {
   res.respond({
     project: {
       ...project,
+      users: project.users.map(user => serializeDemoUser(user)),
       // Transform issues to include only userIds instead of full user objects
       issues: project.issues.map(issue => ({
         ...issuePartial(issue),
