@@ -14,12 +14,6 @@ const propTypes = {
   validateOnBlur: PropTypes.bool,
 };
 
-const defaultProps = {
-  validate: undefined,
-  validations: undefined,
-  validateOnBlur: false,
-};
-
 const Form = ({ validate, validations, ...otherProps }) => (
   <Formik
     {...otherProps}
@@ -68,6 +62,5 @@ Form.handleAPIError = (error, form) => {
 Form.is = is;
 
 Form.propTypes = propTypes;
-Form.defaultProps = defaultProps;
 
 export default Form;

@@ -19,26 +19,15 @@ const propTypes = {
   renderContent: PropTypes.func.isRequired,
 };
 
-const defaultProps = {
-  className: undefined,
-  testid: 'modal',
-  variant: 'center',
-  width: 600,
-  withCloseIcon: true,
-  isOpen: undefined,
-  onClose: () => {},
-  renderLink: () => {},
-};
-
 const Modal = ({
   className,
-  testid,
-  variant,
-  width,
-  withCloseIcon,
+  testid = 'modal',
+  variant = 'center',
+  width = 600,
+  withCloseIcon = true,
   isOpen: propsIsOpen,
-  onClose: tellParentToClose,
-  renderLink,
+  onClose: tellParentToClose = () => {},
+  renderLink = () => {},
   renderContent,
 }) => {
   const [stateIsOpen, setStateOpen] = useState(false);
@@ -74,15 +63,15 @@ const Modal = ({
       {isOpen &&
         ReactDOM.createPortal(
           <ScrollOverlay>
-            <ClickableOverlay variant={variant} ref={$clickableOverlayRef}>
+            <ClickableOverlay $variant={variant} ref={$clickableOverlayRef}>
               <StyledModal
                 className={className}
-                variant={variant}
-                width={width}
+                $variant={variant}
+                $width={width}
                 data-testid={testid}
                 ref={$modalRef}
               >
-                {withCloseIcon && <CloseIcon type="close" variant={variant} onClick={closeModal} />}
+                {withCloseIcon && <CloseIcon $variant={variant} type="close" onClick={closeModal} />}
                 {renderContent({ close: closeModal })}
               </StyledModal>
             </ClickableOverlay>
@@ -96,6 +85,5 @@ const Modal = ({
 const $root = document.getElementById('root');
 
 Modal.propTypes = propTypes;
-Modal.defaultProps = defaultProps;
 
 export default Modal;

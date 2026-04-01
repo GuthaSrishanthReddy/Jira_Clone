@@ -18,16 +18,19 @@ const propTypes = {
   renderContent: PropTypes.func.isRequired,
 };
 
-const defaultProps = {
-  className: undefined,
-  placement: 'bottom',
-  offset: {
-    top: 0,
-    left: 0,
-  },
+const defaultOffset = {
+  top: 0,
+  left: 0,
 };
 
-const Tooltip = ({ className, placement, offset, width, renderLink, renderContent }) => {
+const Tooltip = ({
+  className,
+  placement = 'bottom',
+  offset = defaultOffset,
+  width,
+  renderLink,
+  renderContent,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const $linkRef = useRef();
@@ -63,7 +66,7 @@ const Tooltip = ({ className, placement, offset, width, renderLink, renderConten
 
       {isOpen &&
         ReactDOM.createPortal(
-          <StyledTooltip className={className} ref={$tooltipRef} width={width}>
+          <StyledTooltip $width={width} className={className} ref={$tooltipRef}>
             {renderContent({ close: closeTooltip })}
           </StyledTooltip>,
           $root,
@@ -74,7 +77,7 @@ const Tooltip = ({ className, placement, offset, width, renderLink, renderConten
 
 const calcPosition = (offset, placement, $tooltipRef, $linkRef) => {
   const margin = 10;
-  const finalOffset = { ...defaultProps.offset, ...offset };
+  const finalOffset = { ...defaultOffset, ...offset };
 
   const tooltipRect = $tooltipRef.current.getBoundingClientRect();
   const linkRect = $linkRef.current.getBoundingClientRect();
@@ -109,6 +112,5 @@ const calcPosition = (offset, placement, $tooltipRef, $linkRef) => {
 const $root = document.getElementById('root');
 
 Tooltip.propTypes = propTypes;
-Tooltip.defaultProps = defaultProps;
 
 export default Tooltip;

@@ -33,7 +33,7 @@ const ProjectBoardIssueDetailsPriority = ({ issue, updateIssue }) => (
 );
 
 const renderPriorityItem = (priority, isValue) => (
-  <Priority isValue={isValue}>
+  <Priority $isValue={isValue}>
     <IssuePriorityIcon priority={priority} />
     <Label>{IssuePriorityCopy[priority]}</Label>
   </Priority>

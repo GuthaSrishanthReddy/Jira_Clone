@@ -14,22 +14,13 @@ const propTypes = {
   renderLink: PropTypes.func.isRequired,
 };
 
-const defaultProps = {
-  className: undefined,
-  variant: 'primary',
-  title: 'Warning',
-  message: 'Are you sure you want to continue with this action?',
-  confirmText: 'Confirm',
-  cancelText: 'Cancel',
-};
-
 const ConfirmModal = ({
   className,
-  variant,
-  title,
-  message,
-  confirmText,
-  cancelText,
+  variant = 'primary',
+  title = 'Warning',
+  message = 'Are you sure you want to continue with this action?',
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
   onConfirm,
   renderLink,
 }) => {
@@ -74,6 +65,5 @@ const ConfirmModal = ({
 };
 
 ConfirmModal.propTypes = propTypes;
-ConfirmModal.defaultProps = defaultProps;
 
 export default ConfirmModal;

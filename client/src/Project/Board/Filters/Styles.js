@@ -6,29 +6,33 @@ import { InputDebounced, Avatar, Button } from 'shared/components';
 export const Filters = styled.div`
   display: flex;
   align-items: center;
-  margin-top: 24px;
+  margin-top: 20px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+  gap: 8px;
 `;
 
 export const SearchInput = styled(InputDebounced)`
-  margin-right: 18px;
-  width: 160px;
+  width: 180px;
 `;
 
 export const Avatars = styled.div`
   display: flex;
   flex-direction: row-reverse;
-  margin: 0 12px 0 2px;
 `;
 
 export const AvatarIsActiveBorder = styled.div`
   display: inline-flex;
-  margin-left: -2px;
+  margin-left: -4px;
   border-radius: 50%;
-  transition: transform 0.1s;
+  transition: transform 0.15s;
   ${mixin.clickable};
-  ${props => props.isActive && `box-shadow: 0 0 0 4px ${color.primary}`}
+  ${props =>
+    props.$isActive &&
+    `box-shadow: 0 0 0 3px ${color.primary}; border-radius: 50%;`}
   &:hover {
-    transform: translateY(-5px);
+    transform: translateY(-4px);
+    z-index: 1;
   }
 `;
 
@@ -37,19 +41,29 @@ export const StyledAvatar = styled(Avatar)`
 `;
 
 export const StyledButton = styled(Button)`
-  margin-left: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  ${font.size(13)}
+  ${props =>
+    props.$isActive &&
+    `
+    background: ${color.primaryLight};
+    color: ${color.primary};
+    border-color: ${color.primary};
+  `}
 `;
 
 export const ClearAll = styled.div`
   height: 32px;
   line-height: 32px;
-  margin-left: 15px;
-  padding-left: 12px;
-  border-left: 1px solid ${color.borderLightest};
-  color: ${color.textDark};
-  ${font.size(14.5)}
+  padding: 0 10px;
+  border-radius: 8px;
+  color: ${color.textMedium};
+  ${font.size(13)}
   ${mixin.clickable}
   &:hover {
-    color: ${color.textMedium};
+    background: ${color.backgroundLight};
+    color: ${color.textDark};
   }
 `;

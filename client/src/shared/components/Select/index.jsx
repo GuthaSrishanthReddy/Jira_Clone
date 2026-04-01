@@ -34,36 +34,20 @@ const propTypes = {
   renderOption: PropTypes.func,
 };
 
-const defaultProps = {
-  className: undefined,
-  variant: 'normal',
-  dropdownWidth: undefined,
-  name: undefined,
-  value: undefined,
-  defaultValue: undefined,
-  placeholder: 'Select',
-  invalid: false,
-  onCreate: undefined,
-  isMulti: false,
-  withClearValue: true,
-  renderValue: undefined,
-  renderOption: undefined,
-};
-
 const Select = ({
   className,
-  variant,
+  variant = 'normal',
   dropdownWidth,
   name,
   value: propsValue,
   defaultValue,
-  placeholder,
-  invalid,
+  placeholder = 'Select',
+  invalid = false,
   options,
   onChange,
   onCreate,
-  isMulti,
-  withClearValue,
+  isMulti = false,
+  withClearValue = true,
   renderValue: propsRenderValue,
   renderOption: propsRenderOption,
 }) => {
@@ -137,14 +121,14 @@ const Select = ({
   return (
     <StyledSelect
       className={className}
-      variant={variant}
+      $invalid={invalid}
+      $variant={variant}
       ref={$selectRef}
       tabIndex="0"
       onKeyDown={handleFocusedSelectKeydown}
-      invalid={invalid}
     >
       <ValueContainer
-        variant={variant}
+        $variant={variant}
         data-testid={name ? `select:${name}` : 'select'}
         onClick={activateDropdown}
       >
@@ -155,7 +139,7 @@ const Select = ({
           : getOptionLabel(value)}
 
         {!isValueEmpty && isMulti && (
-          <ValueMulti variant={variant}>
+          <ValueMulti $variant={variant}>
             {value.map(optionValue =>
               propsRenderValue ? (
                 propsRenderValue({
@@ -204,6 +188,5 @@ const Select = ({
 };
 
 Select.propTypes = propTypes;
-Select.defaultProps = defaultProps;
 
 export default Select;

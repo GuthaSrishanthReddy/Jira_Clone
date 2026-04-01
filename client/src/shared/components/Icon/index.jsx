@@ -46,18 +46,18 @@ const propTypes = {
   top: PropTypes.number,
 };
 
-const defaultProps = {
-  className: undefined,
-  size: 16,
-  left: 0,
-  top: 0,
-};
-
-const Icon = ({ type, ...iconProps }) => (
-  <StyledIcon {...iconProps} data-testid={`icon:${type}`} code={fontIconCodes[type]} />
+const Icon = ({ className, type, size = 16, left = 0, top = 0, ...iconProps }) => (
+  <StyledIcon
+    {...iconProps}
+    className={className}
+    data-testid={`icon:${type}`}
+    $code={fontIconCodes[type]}
+    $left={left}
+    $size={size}
+    $top={top}
+  />
 );
 
 Icon.propTypes = propTypes;
-Icon.defaultProps = defaultProps;
 
 export default Icon;

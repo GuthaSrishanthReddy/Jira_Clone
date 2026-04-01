@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { Droppable } from 'react-beautiful-dnd';
+import { Droppable } from '@hello-pangea/dnd';
 import { intersection } from 'lodash';
 
 import { IssueStatusCopy } from 'shared/constants/issues';
 
 import Issue from './Issue';
-import { List, Title, IssuesCount, Issues } from './Styles';
+import { List, ListHeader, Title, IssuesCount, Issues } from './Styles';
 
 const propTypes = {
   status: PropTypes.string.isRequired,
@@ -16,11 +16,7 @@ const propTypes = {
   currentUserId: PropTypes.number,
 };
 
-const defaultProps = {
-  currentUserId: null,
-};
-
-const ProjectBoardList = ({ status, project, filters, currentUserId }) => {
+const ProjectBoardList = ({ status, project, filters, currentUserId = null }) => {
   const filteredIssues = filterIssues(project.issues, filters, currentUserId);
   const filteredListIssues = getSortedListIssues(filteredIssues, status);
   const allListIssues = getSortedListIssues(project.issues, status);
@@ -28,11 +24,13 @@ const ProjectBoardList = ({ status, project, filters, currentUserId }) => {
   return (
     <Droppable key={status} droppableId={status}>
       {provided => (
-        <List>
-          <Title>
-            {`${IssueStatusCopy[status]} `}
-            <IssuesCount>{formatIssuesCount(allListIssues, filteredListIssues)}</IssuesCount>
-          </Title>
+        <List $status={status}>
+          <ListHeader $status={status}>
+            <Title>{IssueStatusCopy[status]}</Title>
+            <IssuesCount $status={status}>
+              {formatIssuesCount(allListIssues, filteredListIssues)}
+            </IssuesCount>
+          </ListHeader>
           <Issues
             {...provided.droppableProps}
             ref={provided.innerRef}
@@ -73,12 +71,11 @@ const getSortedListIssues = (issues, status) =>
 
 const formatIssuesCount = (allListIssues, filteredListIssues) => {
   if (allListIssues.length !== filteredListIssues.length) {
-    return `${filteredListIssues.length} of ${allListIssues.length}`;
+    return `${filteredListIssues.length}/${allListIssues.length}`;
   }
   return allListIssues.length;
 };
 
 ProjectBoardList.propTypes = propTypes;
-ProjectBoardList.defaultProps = defaultProps;
 
 export default ProjectBoardList;

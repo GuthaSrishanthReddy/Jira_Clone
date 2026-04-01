@@ -23,12 +23,7 @@ const propTypes = {
   setDropdownOpen: PropTypes.func.isRequired,
 };
 
-const defaultProps = {
-  withTime: true,
-  value: undefined,
-};
-
-const DatePickerDateSection = ({ withTime, value, onChange, setDropdownOpen }) => {
+const DatePickerDateSection = ({ withTime = true, value, onChange, setDropdownOpen }) => {
   const [selectedMonth, setSelectedMonth] = useState(moment(value).startOf('month'));
 
   const handleYearChange = year => {
@@ -76,20 +71,20 @@ const DatePickerDateSection = ({ withTime, value, onChange, setDropdownOpen }) =
           <DayName key={name}>{name}</DayName>
         ))}
         {generateFillerDaysBeforeMonthStart(selectedMonth).map(i => (
-          <Day key={`before-${i}`} isFiller />
+          <Day key={`before-${i}`} $isFiller />
         ))}
         {generateMonthDays(selectedMonth).map(date => (
           <Day
             key={date}
-            isToday={moment().isSame(date, 'day')}
-            isSelected={moment(value).isSame(date, 'day')}
+            $isSelected={moment(value).isSame(date, 'day')}
+            $isToday={moment().isSame(date, 'day')}
             onClick={() => handleDayChange(date)}
           >
             {formatDate(date, 'D')}
           </Day>
         ))}
         {generateFillerDaysAfterMonthEnd(selectedMonth).map(i => (
-          <Day key={`after-${i}`} isFiller />
+          <Day key={`after-${i}`} $isFiller />
         ))}
       </Grid>
     </DateSection>
@@ -121,6 +116,5 @@ const generateFillerDaysAfterMonthEnd = selectedMonth => {
 };
 
 DatePickerDateSection.propTypes = propTypes;
-DatePickerDateSection.defaultProps = defaultProps;
 
 export default DatePickerDateSection;

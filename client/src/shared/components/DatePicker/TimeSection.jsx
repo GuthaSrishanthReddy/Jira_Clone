@@ -13,10 +13,6 @@ const propTypes = {
   setDropdownOpen: PropTypes.func.isRequired,
 };
 
-const defaultProps = {
-  value: undefined,
-};
-
 const DatePickerTimeSection = ({ value, onChange, setDropdownOpen }) => {
   const $sectionRef = useRef();
 
@@ -41,7 +37,7 @@ const DatePickerTimeSection = ({ value, onChange, setDropdownOpen }) => {
         <Time
           key={time}
           data-time={time}
-          isSelected={time === formatTime(value)}
+          $isSelected={time === formatTime(value)}
           onClick={() => handleTimeChange(time)}
         >
           {time}
@@ -71,6 +67,5 @@ const generateTimes = () =>
   });
 
 DatePickerTimeSection.propTypes = propTypes;
-DatePickerTimeSection.defaultProps = defaultProps;
 
 export default DatePickerTimeSection;

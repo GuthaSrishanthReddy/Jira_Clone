@@ -16,13 +16,7 @@ const propTypes = {
   onChange: PropTypes.func.isRequired,
 };
 
-const defaultProps = {
-  className: undefined,
-  withTime: true,
-  value: undefined,
-};
-
-const DatePicker = ({ className, withTime, value, onChange, ...inputProps }) => {
+const DatePicker = ({ className, withTime = true, value, onChange, ...inputProps }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const $containerRef = useRef();
 
@@ -39,7 +33,7 @@ const DatePicker = ({ className, withTime, value, onChange, ...inputProps }) => 
         onClick={() => setDropdownOpen(true)}
       />
       {isDropdownOpen && (
-        <Dropdown withTime={withTime}>
+        <Dropdown $withTime={withTime}>
           <DateSection
             withTime={withTime}
             value={value}
@@ -61,6 +55,5 @@ const getFormattedInputValue = (value, withTime) => {
 };
 
 DatePicker.propTypes = propTypes;
-DatePicker.defaultProps = defaultProps;
 
 export default DatePicker;

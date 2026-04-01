@@ -5,9 +5,9 @@ import { issueStatusColors, issueStatusBackgroundColors, mixin } from 'shared/ut
 export const Status = styled.div`
   text-transform: uppercase;
   transition: all 0.1s;
-  ${props => mixin.tag(issueStatusBackgroundColors[props.color], issueStatusColors[props.color])}
+  ${props => mixin.tag(issueStatusBackgroundColors[props.$color], issueStatusColors[props.$color])}
   ${props =>
-    props.isValue &&
+    props.$isValue &&
     css`
       padding: 0 12px;
       height: 32px;

@@ -17,19 +17,22 @@ const propTypes = {
   onClick: PropTypes.func,
 };
 
-const defaultProps = {
-  className: undefined,
-  children: undefined,
-  variant: 'secondary',
-  icon: undefined,
-  iconSize: 18,
-  disabled: false,
-  isWorking: false,
-  onClick: () => {},
-};
-
 const Button = forwardRef(
-  ({ children, variant, icon, iconSize, disabled, isWorking, onClick, ...buttonProps }, ref) => {
+  (
+    {
+      children,
+      className,
+      variant = 'secondary',
+      icon,
+      iconSize = 18,
+      disabled = false,
+      isWorking = false,
+      onClick = () => {},
+      isActive,
+      ...buttonProps
+    },
+    ref,
+  ) => {
     const handleClick = () => {
       if (!disabled && !isWorking) {
         onClick();
@@ -39,11 +42,13 @@ const Button = forwardRef(
     return (
       <StyledButton
         {...buttonProps}
+        className={className}
         onClick={handleClick}
-        variant={variant}
+        $iconOnly={!children}
+        $isActive={isActive}
+        $isWorking={isWorking}
+        $variant={variant}
         disabled={disabled || isWorking}
-        isWorking={isWorking}
-        iconOnly={!children}
         ref={ref}
       >
         {isWorking && <StyledSpinner size={26} color={getIconColor(variant)} />}
@@ -53,7 +58,7 @@ const Button = forwardRef(
         ) : (
           icon
         )}
-        {children && <Text withPadding={isWorking || icon}>{children}</Text>}
+        {children && <Text $withPadding={isWorking || icon}>{children}</Text>}
       </StyledButton>
     );
   },
@@ -63,6 +68,5 @@ const getIconColor = variant =>
   ['secondary', 'empty'].includes(variant) ? color.textDark : '#fff';
 
 Button.propTypes = propTypes;
-Button.defaultProps = defaultProps;
 
 export default Button;

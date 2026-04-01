@@ -14,7 +14,7 @@ const IssuePriorityIcon = ({ priority, ...otherProps }) => {
     ? 'arrow-down'
     : 'arrow-up';
 
-  return <PriorityIcon type={iconType} color={priority} size={18} {...otherProps} />;
+  return <PriorityIcon $priority={priority} type={iconType} size={18} {...otherProps} />;
 };
 
 IssuePriorityIcon.propTypes = propTypes;

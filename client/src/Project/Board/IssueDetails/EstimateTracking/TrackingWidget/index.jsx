@@ -13,7 +13,7 @@ const ProjectBoardIssueDetailsTrackingWidget = ({ issue }) => (
     <WatchIcon type="stopwatch" size={26} top={-1} />
     <Right>
       <BarCont>
-        <Bar width={calculateTrackingBarWidth(issue)} />
+        <Bar $width={calculateTrackingBarWidth(issue)} />
       </BarCont>
       <Values>
         <div>{issue.timeSpent ? `${issue.timeSpent}h logged` : 'No time logged'}</div>

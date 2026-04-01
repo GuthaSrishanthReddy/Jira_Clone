@@ -27,14 +27,12 @@ const ProjectBoardIssueDetailsStatus = ({ issue, updateIssue }) => (
       }))}
       onChange={status => updateIssue({ status })}
       renderValue={({ value: status }) => (
-        <Status isValue color={status}>
+        <Status $color={status} $isValue>
           <div>{IssueStatusCopy[status]}</div>
           <Icon type="chevron-down" size={18} />
         </Status>
       )}
-      renderOption={({ value: status }) => (
-        <Status color={status}>{IssueStatusCopy[status]}</Status>
-      )}
+      renderOption={({ value: status }) => <Status $color={status}>{IssueStatusCopy[status]}</Status>}
     />
   </Fragment>
 );

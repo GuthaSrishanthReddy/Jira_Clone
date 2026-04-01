@@ -22,13 +22,6 @@ const propTypes = {
   propsRenderOption: PropTypes.func,
 };
 
-const defaultProps = {
-  dropdownWidth: undefined,
-  value: undefined,
-  onCreate: undefined,
-  propsRenderOption: undefined,
-};
-
 const SelectDropdown = ({
   dropdownWidth,
   value,
@@ -39,10 +32,10 @@ const SelectDropdown = ({
   deactivateDropdown,
   options,
   onChange,
-  onCreate,
+  onCreate = undefined,
   isMulti,
   withClearValue,
-  propsRenderOption,
+  propsRenderOption = undefined,
 }) => {
   const [isCreatingOption, setCreatingOption] = useState(false);
 
@@ -175,7 +168,7 @@ const SelectDropdown = ({
   const isOptionCreatable = onCreate && searchValue && !isSearchValueInOptions;
 
   return (
-    <Dropdown width={dropdownWidth}>
+    <Dropdown $width={dropdownWidth}>
       <DropdownInput
         type="text"
         placeholder="Search"
@@ -219,6 +212,5 @@ const SelectDropdown = ({
 const activeOptionClass = 'jira-select-option-is-active';
 
 SelectDropdown.propTypes = propTypes;
-SelectDropdown.defaultProps = defaultProps;
 
 export default SelectDropdown;

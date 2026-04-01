@@ -14,15 +14,6 @@ const propTypes = {
   getEditor: PropTypes.func,
 };
 
-const defaultProps = {
-  className: undefined,
-  placeholder: undefined,
-  defaultValue: undefined,
-  value: undefined,
-  onChange: () => {},
-  getEditor: () => {},
-};
-
 const TextEditor = ({
   className,
   placeholder,
@@ -31,8 +22,8 @@ const TextEditor = ({
   // expensive, but we're still accepting 'value' prop as alias for defaultValue because
   // other components like <Form.Field> feed their children with data via the 'value' prop
   value: alsoDefaultValue,
-  onChange,
-  getEditor,
+  onChange = () => {},
+  getEditor = () => {},
 }) => {
   const $editorContRef = useRef();
   const $editorRef = useRef();
@@ -83,6 +74,5 @@ const quillConfig = {
 };
 
 TextEditor.propTypes = propTypes;
-TextEditor.defaultProps = defaultProps;
 
 export default TextEditor;

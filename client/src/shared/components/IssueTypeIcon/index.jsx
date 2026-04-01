@@ -8,7 +8,7 @@ const propTypes = {
 };
 
 const IssueTypeIcon = ({ type, ...otherProps }) => (
-  <TypeIcon type={type} color={type} size={18} {...otherProps} />
+  <TypeIcon type={type} $issueType={type} size={18} {...otherProps} />
 );
 
 IssueTypeIcon.propTypes = propTypes;
