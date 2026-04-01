@@ -1,6 +1,6 @@
 {
   "name": "jira_clone",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": "Ivor Reic",
   "license": "MIT",
   "scripts": {
@@ -10,12 +10,7 @@
     "start:production": "cd api && npm run start:production && cd ../client && npm run start:production"
   },
   "devDependencies": {
-    "husky": "^4.0.0-beta.5"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run pre-commit"
-    }
+    "husky": "^9.1.7"
   },
   "dependencies": {}
 }

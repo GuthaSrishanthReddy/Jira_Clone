@@ -9,7 +9,7 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, 'build'),
-    filename: '[name]-[hash].js',
+    filename: '[name]-[contenthash].js',
     publicPath: '/',
   },
   module: {
@@ -23,29 +23,25 @@ module.exports = {
         test: /\.css$/,
         use: [
           'style-loader',
-          {
-            loader: 'css-loader',
-            options: { sourceMap: true },
-          },
+          { loader: 'css-loader', options: { sourceMap: true } },
         ],
       },
       {
         test: /\.(jpe?g|png|gif|svg)$/,
-        use: [
-          {
-            loader: 'url-loader',
-            options: { name: '[name]-[hash].[ext]', limit: 10000 },
-          },
-        ],
+        type: 'asset',
+        parser: {
+          dataUrlCondition: { maxSize: 10 * 1024 },
+        },
+        generator: {
+          filename: '[name]-[hash][ext]',
+        },
       },
       {
         test: /\.(woff2?|eot|ttf|otf)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: { name: '[name]-[hash].[ext]' },
-          },
-        ],
+        type: 'asset/resource',
+        generator: {
+          filename: '[name]-[hash][ext]',
+        },
       },
     ],
   },
@@ -64,6 +60,9 @@ module.exports = {
         API_URL: JSON.stringify('https://jira-api.ivorreic.com'),
       },
     }),
-    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+    new webpack.IgnorePlugin({
+      resourceRegExp: /^\.\/locale$/,
+      contextRegExp: /moment$/,
+    }),
   ],
 };

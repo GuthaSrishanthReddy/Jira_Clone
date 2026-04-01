@@ -22,32 +22,39 @@ module.exports = {
         use: ['style-loader', { loader: 'css-loader' }],
       },
       {
-        test: /\.(jpe?g|png|gif|woff2?|eot|ttf|otf|svg)$/,
-        use: [
-          {
-            loader: 'url-loader',
-            options: { limit: 15000 },
-          },
-        ],
+        test: /\.(jpe?g|png|gif|svg)$/,
+        type: 'asset',
+        parser: {
+          dataUrlCondition: { maxSize: 15 * 1024 },
+        },
+      },
+      {
+        test: /\.(woff2?|eot|ttf|otf)$/,
+        type: 'asset/resource',
       },
     ],
   },
   resolve: {
-    // allows us to do absolute imports from "src"
     modules: [path.join(__dirname, 'src'), 'node_modules'],
     extensions: ['*', '.js', '.jsx'],
   },
   devtool: 'eval-source-map',
   devServer: {
-    contentBase: path.join(__dirname, 'dev'),
+    static: path.join(__dirname, 'dev'),
     historyApiFallback: true,
     hot: true,
+    port: 8081,
   },
   plugins: [
-    new webpack.HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, 'src/index.html'),
       favicon: path.join(__dirname, 'src/favicon.png'),
+    }),
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: JSON.stringify('development'),
+        API_URL: JSON.stringify(''),
+      },
     }),
   ],
 };
