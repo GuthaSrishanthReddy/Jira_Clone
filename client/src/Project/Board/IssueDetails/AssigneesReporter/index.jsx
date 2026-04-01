@@ -66,8 +66,8 @@ const ProjectBoardIssueDetailsAssigneesReporter = ({ issue, updateIssue, project
 const renderUser = (user, isSelectValue, removeOptionValue) => (
   <User
     key={user.id}
-    isSelectValue={isSelectValue}
-    withBottomMargin={!!removeOptionValue}
+    $isSelectValue={isSelectValue}
+    $withBottomMargin={!!removeOptionValue}
     onClick={() => removeOptionValue && removeOptionValue()}
   >
     <Avatar avatarUrl={user.avatarUrl} name={user.name} size={24} />
