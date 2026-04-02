@@ -28,6 +28,21 @@ export const Divider = styled.div`
   border-top: 1px solid ${color.borderLightest};
 `;
 
+export const AIActions = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+`;
+
+export const AIHint = styled.div`
+  color: ${color.textLight};
+  ${font.size(12.5)}
+  line-height: 1.5;
+`;
+
 export const Actions = styled.div`
   display: flex;
   justify-content: flex-end;

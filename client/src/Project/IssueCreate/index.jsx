@@ -19,6 +19,8 @@ import {
   SelectItem,
   SelectItemLabel,
   Divider,
+  AIActions,
+  AIHint,
   Actions,
   ActionButton,
 } from './Styles';
@@ -32,6 +34,7 @@ const propTypes = {
 
 const ProjectIssueCreate = ({ project, fetchProject, onCreate, modalClose }) => {
   const [{ isCreating }, createIssue] = useApi.post('/issues');
+  const [{ isCreating: isGenerating }, generateDraft] = useApi.post('/ai/issue-draft');
 
   const { currentUserId } = useCurrentUser();
 
@@ -68,60 +71,96 @@ const ProjectIssueCreate = ({ project, fetchProject, onCreate, modalClose }) => 
         }
       }}
     >
-      <FormElement>
-        <FormHeading>Create issue</FormHeading>
-        <Form.Field.Select
-          name="type"
-          label="Issue Type"
-          tip="Start typing to get a list of possible matches."
-          options={typeOptions}
-          renderOption={renderType}
-          renderValue={renderType}
-        />
-        <Divider />
-        <Form.Field.Input
-          name="title"
-          label="Short Summary"
-          tip="Concisely summarize the issue in one or two sentences."
-        />
-        <Form.Field.TextEditor
-          name="description"
-          label="Description"
-          tip="Describe the issue in as much detail as you'd like."
-        />
-        <Form.Field.Select
-          name="reporterId"
-          label="Reporter"
-          options={userOptions(project)}
-          renderOption={renderUser(project)}
-          renderValue={renderUser(project)}
-        />
-        <Form.Field.Select
-          isMulti
-          name="userIds"
-          label="Assignees"
-          tip="People who are responsible for dealing with this issue."
-          options={userOptions(project)}
-          renderOption={renderUser(project)}
-          renderValue={renderUser(project)}
-        />
-        <Form.Field.Select
-          name="priority"
-          label="Priority"
-          tip="Priority in relation to other issues."
-          options={priorityOptions}
-          renderOption={renderPriority}
-          renderValue={renderPriority}
-        />
-        <Actions>
-          <ActionButton type="submit" variant="primary" isWorking={isCreating}>
-            Create Issue
-          </ActionButton>
-          <ActionButton type="button" variant="empty" onClick={modalClose}>
-            Cancel
-          </ActionButton>
-        </Actions>
-      </FormElement>
+      {({ values, setFieldValue }) => (
+        <FormElement>
+          <FormHeading>Create issue</FormHeading>
+          <Form.Field.Select
+            name="type"
+            label="Issue Type"
+            tip="Start typing to get a list of possible matches."
+            options={typeOptions}
+            renderOption={renderType}
+            renderValue={renderType}
+          />
+          <Divider />
+          <Form.Field.Input
+            name="title"
+            label="Short Summary"
+            tip="Concisely summarize the issue in one or two sentences."
+          />
+          <AIActions>
+            <ActionButton
+              type="button"
+              variant="secondary"
+              isWorking={isGenerating}
+              onClick={async () => {
+                const prompt = values.title.trim();
+
+                if (!prompt) {
+                  toast.error({
+                    message: 'Add a short summary first so GenAI has enough context to draft the issue.',
+                  });
+                  return;
+                }
+
+                try {
+                  const response = await generateDraft({
+                    prompt,
+                    issueType: values.type,
+                    priority: values.priority,
+                  });
+
+                  setFieldValue('title', response.draft.title);
+                  setFieldValue('description', response.draft.description);
+                  toast.success('AI draft added to the form.');
+                } catch (error) {
+                  toast.error(error);
+                }
+              }}
+            >
+              Generate Draft
+            </ActionButton>
+            <AIHint>Uses the short summary and the configured Gemini key from `api/.env`.</AIHint>
+          </AIActions>
+          <Form.Field.TextEditor
+            name="description"
+            label="Description"
+            tip="Describe the issue in as much detail as you'd like."
+          />
+          <Form.Field.Select
+            name="reporterId"
+            label="Reporter"
+            options={userOptions(project)}
+            renderOption={renderUser(project)}
+            renderValue={renderUser(project)}
+          />
+          <Form.Field.Select
+            isMulti
+            name="userIds"
+            label="Assignees"
+            tip="People who are responsible for dealing with this issue."
+            options={userOptions(project)}
+            renderOption={renderUser(project)}
+            renderValue={renderUser(project)}
+          />
+          <Form.Field.Select
+            name="priority"
+            label="Priority"
+            tip="Priority in relation to other issues."
+            options={priorityOptions}
+            renderOption={renderPriority}
+            renderValue={renderPriority}
+          />
+          <Actions>
+            <ActionButton type="submit" variant="primary" isWorking={isCreating}>
+              Create Issue
+            </ActionButton>
+            <ActionButton type="button" variant="empty" onClick={modalClose}>
+              Cancel
+            </ActionButton>
+          </Actions>
+        </FormElement>
+      )}
     </Form>
   );
 };

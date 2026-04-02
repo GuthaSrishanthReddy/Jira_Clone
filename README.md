@@ -5,7 +5,7 @@
 <h3 align="center">
   <a href="https://jira.ivorreic.com/">Visit the live app</a> |
   <a href="https://github.com/oldboyxx/jira_clone/tree/master/client">View client</a> |
-  <a href="https://github.com/oldboyxx/jira_clone/tree/master/api">View API</a>
+  <a href="https://github.com/guthasrishanthreddy/jira-clone">View API</a>
 </h3>
 
 ![Tech logos](https://i.ibb.co/DVFj8PL/tech-icons.jpg)
@@ -77,5 +77,5 @@ I will not be accepting PR's on this repository. Feel free to fork and maintain 
 <h3>
   <a href="https://jira.ivorreic.com/">Visit the live app</a> |
   <a href="https://github.com/oldboyxx/jira_clone/tree/master/client">View client</a> |
-  <a href="https://github.com/oldboyxx/jira_clone/tree/master/api">View API</a>
+  <a href="https://github.com/guthasrishanthreddy/jira-clone">View API</a>
 </h3>
