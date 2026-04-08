@@ -332,6 +332,74 @@ export const WorkloadBadge = styled.span`
   flex-shrink: 0;
 `;
 
+export const MetricGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+  @media (max-width: 900px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
+`;
+
+export const MetricCard = styled.div`
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid ${color.borderLightest};
+  ${mixin.boxShadowCard}
+`;
+
+export const MetricValue = styled.div`
+  color: ${color.textDarkest};
+  ${font.size(28)}
+  ${font.bold}
+  line-height: 1;
+`;
+
+export const MetricLabel = styled.div`
+  margin-top: 6px;
+  color: ${color.textLight};
+  ${font.size(11.5)}
+  ${font.bold}
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+`;
+
+export const MetricMeta = styled.div`
+  margin-top: 6px;
+  color: ${color.textMedium};
+  ${font.size(12)}
+`;
+
+export const TeamProgressList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+export const TeamProgressRow = styled.div`
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: ${color.backgroundLightest};
+`;
+
+export const TeamProgressHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+`;
+
+export const MemberMeta = styled.div`
+  min-width: 0;
+`;
+
+export const ProgressMeta = styled.div`
+  color: ${color.textLight};
+  ${font.size(11.5)}
+`;
+
 // ─── Empty state ──────────────────────────────────────────────────────────────
 export const EmptyState = styled.div`
   padding: 20px 0 8px;

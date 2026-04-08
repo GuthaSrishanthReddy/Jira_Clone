@@ -1,4 +1,4 @@
-import React, { Fragment, useRef } from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 import { Textarea } from 'shared/components';
@@ -20,10 +20,8 @@ const ProjectBoardIssueDetailsCommentsBodyForm = ({
   onSubmit,
   onCancel,
 }) => {
-  const $textareaRef = useRef();
-
   const handleSubmit = () => {
-    if ($textareaRef.current.value.trim()) {
+    if (value.trim()) {
       onSubmit();
     }
   };
@@ -35,7 +33,6 @@ const ProjectBoardIssueDetailsCommentsBodyForm = ({
         placeholder="Add a comment..."
         value={value}
         onChange={onChange}
-        ref={$textareaRef}
       />
       <Actions>
         <FormButton variant="primary" isWorking={isWorking} onClick={handleSubmit}>

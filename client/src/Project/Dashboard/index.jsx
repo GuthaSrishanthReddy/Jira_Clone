@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { orderBy, sumBy } from 'lodash';
 
 import useCurrentUser from 'shared/hooks/currentUser';
-import { IssueStatus, IssueStatusCopy, IssuePriority } from 'shared/constants/issues';
+import { IssueStatus, IssueStatusCopy } from 'shared/constants/issues';
 import { issueTypeColors, issueStatusBackgroundColors, issueStatusColors } from 'shared/utils/styles';
 
 import {
@@ -48,6 +48,16 @@ import {
   WorkloadName,
   WorkloadMeta,
   WorkloadBadge,
+  MetricGrid,
+  MetricCard,
+  MetricValue,
+  MetricLabel,
+  MetricMeta,
+  TeamProgressList,
+  TeamProgressRow,
+  TeamProgressHeader,
+  MemberMeta,
+  ProgressMeta,
   EmptyState,
 } from './Styles';
 
@@ -60,10 +70,6 @@ const getAvatarColor = name => avatarColors[(name || '').charCodeAt(0) % avatarC
 const getInitials = name =>
   (name || '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
-const priorityColors = {
-  5: '#DC2626', 4: '#EF4444', 3: '#F59E0B', 2: '#22C55E', 1: '#86EFAC',
-};
-
 const snapshotBarColors = {
   [IssueStatus.BACKLOG]: '#94A3B8',
   [IssueStatus.SELECTED]: '#D97706',
@@ -73,6 +79,7 @@ const snapshotBarColors = {
 
 const Dashboard = ({ project }) => {
   const { currentUser } = useCurrentUser();
+  const isManager = currentUser?.role === 'manager';
 
   const myIssues = currentUser
     ? project.issues.filter(issue => issue.userIds.includes(currentUser.id))
@@ -94,6 +101,230 @@ const Dashboard = ({ project }) => {
   const completionRate = totalIssues ? Math.round((doneCount / totalIssues) * 100) : 0;
   const estimatedHours = sumBy(project.issues, i => i.estimate || 0);
   const loggedHours = sumBy(project.issues, i => i.timeSpent || 0);
+  const unassignedIssues = project.issues.filter(issue => issue.userIds.length === 0);
+  const activeBugs = project.issues.filter(
+    issue => issue.type === 'bug' && issue.status !== IssueStatus.DONE,
+  );
+  const managerAttention = orderBy(
+    project.issues.filter(
+      issue =>
+        issue.userIds.length === 0 ||
+        (issue.type === 'bug' && issue.status !== IssueStatus.DONE),
+    ),
+    ['updatedAt'],
+    ['desc'],
+  ).slice(0, 6);
+
+  const teamProgress = orderBy(
+    project.users.map(user => {
+      const assignedIssues = project.issues.filter(issue => issue.userIds.includes(user.id));
+      const doneIssues = assignedIssues.filter(issue => issue.status === IssueStatus.DONE).length;
+      const inProgressIssues = assignedIssues.filter(
+        issue => issue.status === IssueStatus.INPROGRESS,
+      ).length;
+      const assignedCount = assignedIssues.length;
+      return {
+        ...user,
+        assignedCount,
+        doneIssues,
+        inProgressIssues,
+        completionRate: assignedCount ? Math.round((doneIssues / assignedCount) * 100) : 0,
+      };
+    }),
+    ['assignedCount', 'doneIssues', 'name'],
+    ['desc', 'desc', 'asc'],
+  );
+
+  if (isManager) {
+    return (
+      <Page>
+        <UserBanner>
+          <BannerLeft>
+            {currentUser?.avatarUrl ? (
+              <UserAvatarImg src={currentUser.avatarUrl} alt={currentUser.name} />
+            ) : (
+              <UserAvatarFallback>{getInitials(currentUser?.name)}</UserAvatarFallback>
+            )}
+            <BannerUserInfo>
+              <BannerLabel>Manager View</BannerLabel>
+              <BannerName>{project.name}</BannerName>
+              <BannerRole>
+                {project.users.length} team member{project.users.length !== 1 ? 's' : ''} · delivery oversight
+              </BannerRole>
+            </BannerUserInfo>
+          </BannerLeft>
+
+          <BannerStats>
+            <BannerStat>
+              <BannerStatValue>{project.users.length}</BannerStatValue>
+              <BannerStatLabel>Team</BannerStatLabel>
+            </BannerStat>
+            <BannerStat>
+              <BannerStatValue>{completionRate}%</BannerStatValue>
+              <BannerStatLabel>Complete</BannerStatLabel>
+            </BannerStat>
+            <BannerStat>
+              <BannerStatValue>{activeBugs.length}</BannerStatValue>
+              <BannerStatLabel>Open Bugs</BannerStatLabel>
+            </BannerStat>
+            <BannerStat>
+              <BannerStatValue>{unassignedIssues.length}</BannerStatValue>
+              <BannerStatLabel>Need Owner</BannerStatLabel>
+            </BannerStat>
+          </BannerStats>
+
+          <HubLink to="/projects">
+            ← All projects
+          </HubLink>
+        </UserBanner>
+
+        <MetricGrid>
+          <MetricCard>
+            <MetricValue>{project.issues.filter(i => i.status !== IssueStatus.DONE).length}</MetricValue>
+            <MetricLabel>Open Work</MetricLabel>
+            <MetricMeta>{project.issues.filter(i => i.status === IssueStatus.INPROGRESS).length} in progress</MetricMeta>
+          </MetricCard>
+          <MetricCard>
+            <MetricValue>{doneCount}</MetricValue>
+            <MetricLabel>Delivered</MetricLabel>
+            <MetricMeta>{totalIssues} total tracked issues</MetricMeta>
+          </MetricCard>
+          <MetricCard>
+            <MetricValue>{loggedHours}h</MetricValue>
+            <MetricLabel>Logged Time</MetricLabel>
+            <MetricMeta>{estimatedHours}h estimated</MetricMeta>
+          </MetricCard>
+          <MetricCard>
+            <MetricValue>{unassignedIssues.length}</MetricValue>
+            <MetricLabel>Needs Assignment</MetricLabel>
+            <MetricMeta>Work items waiting for an owner</MetricMeta>
+          </MetricCard>
+        </MetricGrid>
+
+        <Grid>
+          <Card>
+            <SectionHeader>
+              <SectionTitle>Team Progress</SectionTitle>
+              <SectionBadge>{project.users.length}</SectionBadge>
+            </SectionHeader>
+            <TeamProgressList>
+              {teamProgress.map(user => (
+                <TeamProgressRow key={user.id}>
+                  <TeamProgressHeader>
+                    <ItemLeft>
+                      {user.avatarUrl ? (
+                        <WorkloadAvatar src={user.avatarUrl} alt={user.name} />
+                      ) : (
+                        <WorkloadAvatarFallback $bg={getAvatarColor(user.name)}>
+                          {getInitials(user.name)}
+                        </WorkloadAvatarFallback>
+                      )}
+                      <MemberMeta>
+                        <WorkloadName>{user.name}</WorkloadName>
+                        <WorkloadMeta>{user.title || user.email}</WorkloadMeta>
+                      </MemberMeta>
+                    </ItemLeft>
+                    <ProgressMeta>
+                      {user.doneIssues}/{user.assignedCount} done
+                    </ProgressMeta>
+                  </TeamProgressHeader>
+                  <SnapshotBar>
+                    <SnapshotFill $pct={user.completionRate} $color="#2563EB" />
+                  </SnapshotBar>
+                  <ProgressMeta style={{ marginTop: 8 }}>
+                    {user.inProgressIssues} in progress · {Math.max(user.assignedCount - user.doneIssues - user.inProgressIssues, 0)} queued
+                  </ProgressMeta>
+                </TeamProgressRow>
+              ))}
+            </TeamProgressList>
+          </Card>
+
+          <Card>
+            <SectionHeader>
+              <SectionTitle>Needs Attention</SectionTitle>
+              {managerAttention.length > 0 && <SectionBadge>{managerAttention.length}</SectionBadge>}
+            </SectionHeader>
+            {managerAttention.length === 0 ? (
+              <EmptyState>No urgent assignment or bug follow-up needed right now.</EmptyState>
+            ) : (
+              <List>
+                {managerAttention.map(issue => (
+                  <ListItem key={issue.id}>
+                    <ItemLeft>
+                      <TypeDot $color={issueTypeColors[issue.type]} />
+                      <ItemMain>
+                        <ItemTitle>{issue.title}</ItemTitle>
+                        <ItemMeta>
+                          {issue.userIds.length === 0 ? 'Unassigned' : 'Assigned'}
+                          {` · Updated ${new Date(issue.updatedAt).toLocaleDateString()}`}
+                        </ItemMeta>
+                      </ItemMain>
+                    </ItemLeft>
+                    <StatusBadge
+                      $bg={issueStatusBackgroundColors[issue.status]}
+                      $color={issueStatusColors[issue.status]}
+                    >
+                      {IssueStatusCopy[issue.status]}
+                    </StatusBadge>
+                  </ListItem>
+                ))}
+              </List>
+            )}
+          </Card>
+
+          <Card>
+            <SectionHeader>
+              <SectionTitle>Delivery Snapshot</SectionTitle>
+              <SectionBadge>{totalIssues} total</SectionBadge>
+            </SectionHeader>
+            <SnapshotList>
+              {Object.values(IssueStatus).map(status => {
+                const count = project.issues.filter(i => i.status === status).length;
+                const pct = totalIssues ? Math.round((count / totalIssues) * 100) : 0;
+                return (
+                  <SnapshotRow key={status}>
+                    <SnapshotRowHeader>
+                      <SnapshotLabel>{IssueStatusCopy[status]}</SnapshotLabel>
+                      <SnapshotCount>{count} · {pct}%</SnapshotCount>
+                    </SnapshotRowHeader>
+                    <SnapshotBar>
+                      <SnapshotFill $pct={pct} $color={snapshotBarColors[status]} />
+                    </SnapshotBar>
+                  </SnapshotRow>
+                );
+              })}
+            </SnapshotList>
+          </Card>
+
+          <Card>
+            <SectionHeader>
+              <SectionTitle>Workload Balance</SectionTitle>
+            </SectionHeader>
+            <List>
+              {teamProgress.map(user => (
+                <WorkloadItem key={user.id}>
+                  {user.avatarUrl ? (
+                    <WorkloadAvatar src={user.avatarUrl} alt={user.name} />
+                  ) : (
+                    <WorkloadAvatarFallback $bg={getAvatarColor(user.name)}>
+                      {getInitials(user.name)}
+                    </WorkloadAvatarFallback>
+                  )}
+                  <WorkloadInfo>
+                    <WorkloadName>{user.name}</WorkloadName>
+                    <WorkloadMeta>
+                      {user.assignedCount} assigned · {user.inProgressIssues} active · {user.doneIssues} done
+                    </WorkloadMeta>
+                  </WorkloadInfo>
+                  <WorkloadBadge>{user.assignedCount}</WorkloadBadge>
+                </WorkloadItem>
+              ))}
+            </List>
+          </Card>
+        </Grid>
+      </Page>
+    );
+  }
 
   return (
     <Page>
