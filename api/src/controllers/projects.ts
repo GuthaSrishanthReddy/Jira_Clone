@@ -105,11 +105,18 @@ const projectValidations = {
 
 // Fetch project along with its users and issues
 export const getProjectWithUsersAndIssues = catchErrors(async (req, res) => {
+  const { id: userId, projectId, role } = req.currentUser;
+  const isManager = role === 'manager';
+
   const project = await prisma.project.findUnique({
-    where: { id: req.currentUser.projectId }, // Get current user's project
+    where: { id: projectId },
     include: {
-      users: true, // Include all users in the project
-      issues: { include: { users: { select: { id: true } } } }, // Include issue-user mapping
+      users: true,
+      issues: {
+        // Members only see issues assigned to them
+        where: isManager ? {} : { users: { some: { id: userId } } },
+        include: { users: { select: { id: true } } },
+      },
     },
   });
 
@@ -119,7 +126,6 @@ export const getProjectWithUsersAndIssues = catchErrors(async (req, res) => {
     project: {
       ...project,
       users: project.users.map(user => serializeDemoUser(user)),
-      // Transform issues to include only userIds instead of full user objects
       issues: project.issues.map(issue => ({
         ...issuePartial(issue),
         userIds: issue.users.map(u => u.id),

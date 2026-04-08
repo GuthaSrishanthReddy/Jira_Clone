@@ -18,16 +18,23 @@ const ensureDemoProject = async (): Promise<ProjectWithUsers> => {
     const projectId = existingUsers[0].projectId;
 
     for (const demoUser of demoUsers) {
-      const hasUser = existingUsers.some(user => user.email === demoUser.email);
+      const existing = existingUsers.find(user => user.email === demoUser.email);
 
-      if (!hasUser) {
+      if (!existing) {
         await prisma.user.create({
           data: {
             name: demoUser.name,
             email: demoUser.email,
             avatarUrl: demoUser.avatarUrl,
+            role: demoUser.role,
             projectId,
           },
+        });
+      } else if ((existing as any).role !== demoUser.role) {
+        // Sync role for users that existed before role was added to schema
+        await prisma.user.update({
+          where: { id: existing.id },
+          data: { role: demoUser.role } as any,
         });
       }
     }
@@ -63,6 +70,7 @@ const ensureDemoProject = async (): Promise<ProjectWithUsers> => {
           name: user.name,
           email: user.email,
           avatarUrl: user.avatarUrl,
+          role: user.role,
         })),
       },
     },

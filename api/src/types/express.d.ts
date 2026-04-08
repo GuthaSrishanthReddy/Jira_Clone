@@ -3,6 +3,6 @@ declare namespace Express {
     respond: (data: any) => void;
   }
   export interface Request {
-    currentUser: import('@prisma/client').User;
+    currentUser: import('@prisma/client').User & { role: string };
   }
 }

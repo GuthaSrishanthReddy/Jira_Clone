@@ -44,6 +44,10 @@ model User {
   createdAt DateTime  @default(now())               // Creation timestamp
   updatedAt DateTime  @updatedAt                    // Auto-updated timestamp
 
+  // Role within the project: 'manager' can see all issues, run AI scans, manage settings
+  // 'member' can only see and work on issues assigned to them
+  role      String   @default("member") @db.VarChar(20)
+
   // Foreign key
   projectId Int                                     // Associated project ID
   project   Project   @relation(fields: [projectId], references: [id]) // Relation to Project

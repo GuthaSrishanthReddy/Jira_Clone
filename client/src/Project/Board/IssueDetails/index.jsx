@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import api from 'shared/utils/api';
 import useApi from 'shared/hooks/api';
+import useCurrentUser from 'shared/hooks/currentUser';
 import { PageError, CopyLinkButton, Button, AboutTooltip } from 'shared/components';
 
 import Loader from './Loader';
@@ -33,6 +34,9 @@ const ProjectBoardIssueDetails = ({
   updateLocalProjectIssues,
   modalClose,
 }) => {
+  const { currentUser } = useCurrentUser();
+  const isManager = currentUser?.role === 'manager';
+
   const [{ data, error, setLocalData }, fetchIssue] = useApi.get(`/issues/${issueId}`);
 
   if (!data) return <Loader />;
@@ -57,7 +61,7 @@ const ProjectBoardIssueDetails = ({
   return (
     <Fragment>
       <TopActions>
-        <Type issue={issue} updateIssue={updateIssue} />
+        <Type issue={issue} updateIssue={isManager ? updateIssue : () => {}} />
         <TopActionsRight>
           <AboutTooltip
             renderLink={linkProps => (
@@ -67,20 +71,24 @@ const ProjectBoardIssueDetails = ({
             )}
           />
           <CopyLinkButton variant="empty" />
-          <Delete issue={issue} fetchProject={fetchProject} modalClose={modalClose} />
+          {isManager && <Delete issue={issue} fetchProject={fetchProject} modalClose={modalClose} />}
           <Button icon="close" iconSize={24} variant="empty" onClick={modalClose} />
         </TopActionsRight>
       </TopActions>
       <Content>
         <Left>
-          <Title issue={issue} updateIssue={updateIssue} />
-          <Description issue={issue} updateIssue={updateIssue} />
+          <Title issue={issue} updateIssue={isManager ? updateIssue : () => {}} />
+          <Description issue={issue} updateIssue={isManager ? updateIssue : () => {}} />
           <Comments issue={issue} fetchIssue={fetchIssue} />
         </Left>
         <Right>
           <Status issue={issue} updateIssue={updateIssue} />
-          <AssigneesReporter issue={issue} updateIssue={updateIssue} projectUsers={projectUsers} />
-          <Priority issue={issue} updateIssue={updateIssue} />
+          <AssigneesReporter
+            issue={issue}
+            updateIssue={isManager ? updateIssue : () => {}}
+            projectUsers={projectUsers}
+          />
+          <Priority issue={issue} updateIssue={isManager ? updateIssue : () => {}} />
           <EstimateTracking issue={issue} updateIssue={updateIssue} />
           <Dates issue={issue} />
         </Right>

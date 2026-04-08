@@ -6,6 +6,7 @@ import * as projects from 'controllers/projects';
 import * as github from 'controllers/github';
 import * as test from 'controllers/test';
 import * as users from 'controllers/users';
+import { requireManager } from 'middleware/authorization';
 
 export const attachPublicRoutes = (app: any): void => {
   if (process.env.NODE_ENV === 'test') {
@@ -33,14 +34,15 @@ export const attachPrivateRoutes = (app: any): void => {
 
   app.get('/projects', projects.getAllProjectsWithStats);
   app.get('/project', projects.getProjectWithUsersAndIssues);
-  app.put('/project', projects.update);
+  app.put('/project', requireManager, projects.update);  // manager only
 
-  app.put('/project/github', github.updateGithubSettings);
-  app.post('/project/github/scan', github.triggerScan);
-  app.post('/project/github/scan/full', github.triggerFullScan);
-  app.get('/project/github/findings', github.getFindings);
-  app.get('/project/github/scans', github.getScans);
-  app.post('/project/github/findings/:findingId/promote', github.promoteToIssue);
+  // All GitHub / AI scanning routes are manager-only
+  app.put('/project/github', requireManager, github.updateGithubSettings);
+  app.post('/project/github/scan', requireManager, github.triggerScan);
+  app.post('/project/github/scan/full', requireManager, github.triggerFullScan);
+  app.get('/project/github/findings', requireManager, github.getFindings);
+  app.get('/project/github/scans', requireManager, github.getScans);
+  app.post('/project/github/findings/:findingId/promote', requireManager, github.promoteToIssue);
 
   app.get('/currentUser', users.getCurrentUser);
 };

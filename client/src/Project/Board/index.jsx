@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Routes, Route, useNavigate, useParams } from 'react-router-dom';
 
 import useMergeState from 'shared/hooks/mergeState';
+import useCurrentUser from 'shared/hooks/currentUser';
 import { Breadcrumbs, Modal } from 'shared/components';
 
 import Header from './Header';
@@ -14,13 +15,6 @@ const propTypes = {
   project: PropTypes.object.isRequired,
   fetchProject: PropTypes.func.isRequired,
   updateLocalProjectIssues: PropTypes.func.isRequired,
-};
-
-const defaultFilters = {
-  searchTerm: '',
-  userIds: [],
-  myOnly: false,
-  recent: false,
 };
 
 const IssueDetailsModal = ({ projectUsers, fetchProject, updateLocalProjectIssues }) => {
@@ -48,18 +42,30 @@ const IssueDetailsModal = ({ projectUsers, fetchProject, updateLocalProjectIssue
 };
 
 const ProjectBoard = ({ project, fetchProject, updateLocalProjectIssues }) => {
+  const { currentUser } = useCurrentUser();
+  const isManager = currentUser?.role === 'manager';
+
+  const defaultFilters = {
+    searchTerm: '',
+    userIds: [],
+    myOnly: !isManager, // members always see only their own issues
+    recent: false,
+  };
+
   const [filters, mergeFilters] = useMergeState(defaultFilters);
 
   return (
     <Fragment>
       <Breadcrumbs items={['Projects', project.name, 'Kanban Board']} />
       <Header />
-      <Filters
-        projectUsers={project.users}
-        defaultFilters={defaultFilters}
-        filters={filters}
-        mergeFilters={mergeFilters}
-      />
+      {isManager && (
+        <Filters
+          projectUsers={project.users}
+          defaultFilters={defaultFilters}
+          filters={filters}
+          mergeFilters={mergeFilters}
+        />
+      )}
       <Lists
         project={project}
         filters={filters}

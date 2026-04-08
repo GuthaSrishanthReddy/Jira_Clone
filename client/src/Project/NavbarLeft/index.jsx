@@ -30,6 +30,7 @@ const propTypes = {
 const ProjectNavbarLeft = ({ issueSearchModalOpen, issueCreateModalOpen }) => {
   const navigate = useNavigate();
   const { currentUser } = useCurrentUser({ cachePolicy: 'no-cache' });
+  const isManager = currentUser?.role === 'manager';
 
   const handleSignOut = () => {
     removeStoredAuthToken();
@@ -47,10 +48,12 @@ const ProjectNavbarLeft = ({ issueSearchModalOpen, issueCreateModalOpen }) => {
         <ItemText>Search issues</ItemText>
       </Item>
 
-      <Item onClick={issueCreateModalOpen}>
-        <Icon type="plus" size={27} />
-        <ItemText>Create Issue</ItemText>
-      </Item>
+      {isManager && (
+        <Item onClick={issueCreateModalOpen}>
+          <Icon type="plus" size={27} />
+          <ItemText>Create Issue</ItemText>
+        </Item>
+      )}
 
       <Bottom>
         <AboutTooltip

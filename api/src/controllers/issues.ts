@@ -1,7 +1,7 @@
 import striptags from 'striptags';
 
 import { catchErrors } from 'errors';
-import { EntityNotFoundError, BadUserInputError } from 'errors';
+import { EntityNotFoundError, BadUserInputError, ForbiddenError } from 'errors';
 import { generateErrors } from 'utils/validation';
 import is from 'utils/validation';
 import prisma from 'database/prisma';
@@ -17,13 +17,19 @@ const issueValidations = {
   reporterId: is.required(),
 };
 
+// Fields a member (non-manager) is allowed to update on their own issues
+const MEMBER_ALLOWED_FIELDS = new Set(['status', 'listPosition', 'timeSpent', 'timeRemaining']);
+
 export const getProjectIssues = catchErrors(async (req, res) => {
-  const { projectId } = req.currentUser;
+  const { id: userId, projectId, role } = req.currentUser;
   const { searchTerm } = req.query;
+  const isManager = role === 'manager';
 
   const issues = await prisma.issue.findMany({
     where: {
       projectId,
+      // Members only see their assigned issues
+      ...(isManager ? {} : { users: { some: { id: userId } } }),
       ...(searchTerm
         ? {
             OR: [
@@ -45,6 +51,9 @@ export const getProjectIssues = catchErrors(async (req, res) => {
 });
 
 export const getIssueWithUsersAndComments = catchErrors(async (req, res) => {
+  const { id: userId, projectId, role } = req.currentUser;
+  const isManager = role === 'manager';
+
   const issue = await prisma.issue.findUnique({
     where: { id: Number(req.params.issueId) },
     include: {
@@ -55,6 +64,14 @@ export const getIssueWithUsersAndComments = catchErrors(async (req, res) => {
 
   if (!issue) throw new EntityNotFoundError('Issue');
 
+  // Ensure the issue belongs to the user's project
+  if (issue.projectId !== projectId) throw new EntityNotFoundError('Issue');
+
+  // Members can only view issues they are assigned to
+  if (!isManager && !issue.users.some(u => u.id === userId)) {
+    throw new ForbiddenError('You can only view issues assigned to you.');
+  }
+
   res.respond({
     issue: {
       ...issue,
@@ -64,6 +81,11 @@ export const getIssueWithUsersAndComments = catchErrors(async (req, res) => {
 });
 
 export const create = catchErrors(async (req, res) => {
+  // Only managers can create issues
+  if (req.currentUser.role !== 'manager') {
+    throw new ForbiddenError('Only managers can create issues.');
+  }
+
   const body = req.body;
   const listPosition = await calculateListPosition(body.projectId, body.status);
   const errors = generateErrors({ ...body, listPosition }, issueValidations);
@@ -97,10 +119,31 @@ export const create = catchErrors(async (req, res) => {
 
 export const update = catchErrors(async (req, res) => {
   const id = Number(req.params.issueId);
-  const existing = await prisma.issue.findUnique({ where: { id } });
+  const { id: userId, projectId, role } = req.currentUser;
+  const isManager = role === 'manager';
+
+  const existing = await prisma.issue.findUnique({
+    where: { id },
+    include: { users: { select: { id: true } } },
+  });
   if (!existing) throw new EntityNotFoundError('Issue');
+  if (existing.projectId !== projectId) throw new EntityNotFoundError('Issue');
 
   const body = req.body;
+
+  if (!isManager) {
+    // Members can only update their own assigned issues
+    if (!existing.users.some(u => u.id === userId)) {
+      throw new ForbiddenError('You can only update issues assigned to you.');
+    }
+    // Members can only touch a limited set of fields
+    const requestedFields = Object.keys(body);
+    const forbidden = requestedFields.filter(f => !MEMBER_ALLOWED_FIELDS.has(f));
+    if (forbidden.length > 0) {
+      throw new ForbiddenError(`Members cannot update: ${forbidden.join(', ')}.`);
+    }
+  }
+
   const descriptionText =
     body.description !== undefined
       ? body.description
@@ -111,17 +154,17 @@ export const update = catchErrors(async (req, res) => {
   const issue = await prisma.issue.update({
     where: { id },
     data: {
-      ...(body.title !== undefined && { title: body.title }),
-      ...(body.type !== undefined && { type: body.type }),
+      ...(body.title !== undefined && isManager && { title: body.title }),
+      ...(body.type !== undefined && isManager && { type: body.type }),
       ...(body.status !== undefined && { status: body.status }),
-      ...(body.priority !== undefined && { priority: body.priority }),
+      ...(body.priority !== undefined && isManager && { priority: body.priority }),
       ...(body.listPosition !== undefined && { listPosition: body.listPosition }),
-      ...(body.description !== undefined && { description: body.description }),
-      ...(descriptionText !== undefined && { descriptionText }),
-      ...(body.estimate !== undefined && { estimate: body.estimate }),
+      ...(body.description !== undefined && isManager && { description: body.description }),
+      ...(descriptionText !== undefined && isManager && { descriptionText }),
+      ...(body.estimate !== undefined && isManager && { estimate: body.estimate }),
       ...(body.timeSpent !== undefined && { timeSpent: body.timeSpent }),
       ...(body.timeRemaining !== undefined && { timeRemaining: body.timeRemaining }),
-      ...(body.userIds !== undefined && {
+      ...(body.userIds !== undefined && isManager && {
         users: { set: (body.userIds as number[]).map((uid: number) => ({ id: uid })) },
       }),
     },
@@ -132,6 +175,11 @@ export const update = catchErrors(async (req, res) => {
 });
 
 export const remove = catchErrors(async (req, res) => {
+  // Only managers can delete issues
+  if (req.currentUser.role !== 'manager') {
+    throw new ForbiddenError('Only managers can delete issues.');
+  }
+
   const id = Number(req.params.issueId);
   const existing = await prisma.issue.findUnique({ where: { id } });
   if (!existing) throw new EntityNotFoundError('Issue');
