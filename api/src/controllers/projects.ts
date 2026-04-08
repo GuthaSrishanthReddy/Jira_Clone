@@ -7,6 +7,95 @@ import prisma from 'database/prisma';
 import { issuePartial } from 'serializers/issues';
 import { ProjectCategory } from 'constants/projects';
 
+// GET /projects — returns all projects with summary stats for the hub dashboard
+export const getAllProjectsWithStats = catchErrors(async (req, res) => {
+  const projects = await prisma.project.findMany({
+    include: {
+      users: { select: { id: true, name: true, avatarUrl: true } },
+      issues: {
+        select: {
+          id: true,
+          status: true,
+          type: true,
+          priority: true,
+          updatedAt: true,
+          users: { select: { id: true } },
+        },
+      },
+      findings: { select: { id: true, severity: true } },
+      scans: {
+        select: { id: true, status: true, completedAt: true },
+        orderBy: { startedAt: 'desc' },
+        take: 1,
+      },
+    },
+    orderBy: { updatedAt: 'desc' },
+  });
+
+  const currentUserId = req.currentUser.id;
+
+  const result = projects.map(project => {
+    // Single pass over issues — avoids 5+ separate .filter() calls per project
+    let doneIssues = 0, inProgressIssues = 0, backlogIssues = 0, bugIssues = 0, myIssueCount = 0;
+    let latestMs = 0;
+    for (const i of project.issues) {
+      if (i.status === 'done') doneIssues++;
+      else if (i.status === 'inprogress') inProgressIssues++;
+      else if (i.status === 'backlog') backlogIssues++;
+      if (i.type === 'bug') bugIssues++;
+      if (i.users.some(u => u.id === currentUserId)) myIssueCount++;
+      const t = new Date(i.updatedAt).getTime();
+      if (t > latestMs) latestMs = t;
+    }
+    const totalIssues = project.issues.length;
+    const completionRate = totalIssues > 0 ? Math.round((doneIssues / totalIssues) * 100) : 0;
+
+    // Single pass over findings
+    let criticalFindings = 0, highFindings = 0;
+    for (const f of project.findings) {
+      if (f.severity === 'critical') criticalFindings++;
+      else if (f.severity === 'high') highFindings++;
+    }
+    const aiHealthScore = project.githubRepoName
+      ? Math.max(0, 100 - criticalFindings * 30 - highFindings * 10)
+      : null;
+
+    const lastActivity = latestMs > 0 ? new Date(latestMs) : project.updatedAt;
+
+    return {
+      id: project.id,
+      name: project.name,
+      url: project.url,
+      description: project.description,
+      category: project.category,
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+      githubRepoOwner: project.githubRepoOwner,
+      githubRepoName: project.githubRepoName,
+      aiBugMonitoringEnabled: project.aiBugMonitoringEnabled,
+      users: project.users,
+      lastScan: project.scans[0] || null,
+      stats: {
+        totalIssues,
+        doneIssues,
+        inProgressIssues,
+        backlogIssues,
+        bugIssues,
+        completionRate,
+        myIssueCount,
+        criticalFindings,
+        highFindings,
+        totalFindings: project.findings.length,
+        aiHealthScore,
+        teamSize: project.users.length,
+        lastActivity,
+      },
+    };
+  });
+
+  res.respond({ projects: result });
+});
+
 // Validation rules for project fields
 const projectValidations = {
   name: [is.required(), is.maxLength(100)], // Name is required and max 100 chars

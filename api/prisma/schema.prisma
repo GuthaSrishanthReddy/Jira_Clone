@@ -20,9 +20,19 @@ model Project {
   createdAt   DateTime @default(now())              // Timestamp when created
   updatedAt   DateTime @updatedAt                   // Auto-updated timestamp
 
+  // GitHub Integration
+  githubRepoOwner        String?  @db.VarChar
+  githubRepoName         String?  @db.VarChar
+  githubDefaultBranch    String?  @db.VarChar @default("main")
+  githubAccessToken      String?  @db.VarChar
+  aiBugMonitoringEnabled Boolean  @default(false)
+  lastScannedCommitSha   String?  @db.VarChar
+
   // Relations
-  issues      Issue[] // One project can have many issues
-  users       User[]  // One project can have many users
+  issues      Issue[]       // One project can have many issues
+  users       User[]        // One project can have many users
+  scans       RepoScan[]    // AI repo scans for this project
+  findings    RepoFinding[] // All findings for this project
 }
 
 // Represents a user assigned to a project
@@ -67,9 +77,44 @@ model Issue {
   projectId       Int                                   // Associated project ID
 
   // Relations
-  project         Project   @relation(fields: [projectId], references: [id]) // Belongs to project
+  project         Project       @relation(fields: [projectId], references: [id]) // Belongs to project
   comments        Comment[]                             // One issue can have many comments
-  users           User[]    @relation("IssueUsers")      // Many-to-many assigned users
+  users           User[]        @relation("IssueUsers") // Many-to-many assigned users
+  repoFindings    RepoFinding[]                         // AI-detected findings that created this issue
+}
+
+// Represents a single AI-powered scan of a GitHub repo
+model RepoScan {
+  id          Int       @id @default(autoincrement())
+  projectId   Int
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status      String    @db.VarChar  // 'running' | 'completed' | 'failed'
+  isFullScan  Boolean   @default(false) // true = full repo scan, false = incremental diff scan
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  commitSha   String?   @db.VarChar  // Latest commit SHA scanned
+  error       String?   @db.Text
+  findings    RepoFinding[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Represents a single bug/issue found by AI analysis
+model RepoFinding {
+  id                Int      @id @default(autoincrement())
+  scanId            Int
+  scan              RepoScan @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  projectId         Int
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title             String   @db.VarChar(200)
+  severity          String   @db.VarChar  // 'critical' | 'high' | 'medium' | 'low'
+  filePath          String   @db.VarChar
+  reason            String   @db.Text
+  suggestedFix      String?  @db.Text
+  shouldCreateIssue Boolean  @default(false)
+  issueId           Int?
+  issue             Issue?   @relation(fields: [issueId], references: [id], onDelete: SetNull)
+  createdAt         DateTime @default(now())
 }
 
 // Represents comments on issues

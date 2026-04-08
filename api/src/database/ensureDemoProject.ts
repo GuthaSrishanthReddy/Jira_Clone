@@ -120,4 +120,115 @@ const seedProjectIssues = async (projectId: number) => {
   ]);
 };
 
+// ---------------------------------------------------------------------------
+// Companion projects — shown in the multi-project hub dashboard
+// Each has its own users and seeded issues so the cards look realistic.
+// ---------------------------------------------------------------------------
+
+const companionProjectsData = [
+  {
+    name: 'DataFlow API',
+    description:
+      'High-performance microservices backend for real-time data pipelines and analytics processing.',
+    category: ProjectCategory.SOFTWARE,
+    users: [
+      { name: 'Alex Chen', email: 'alex@dataflow.demo', avatarUrl: 'https://i.pravatar.cc/150?img=11' },
+      { name: 'Sarah Kim', email: 'sarah@dataflow.demo', avatarUrl: 'https://i.pravatar.cc/150?img=20' },
+      { name: 'Marcus Webb', email: 'marcus@dataflow.demo', avatarUrl: 'https://i.pravatar.cc/150?img=51' },
+    ],
+    issues: [
+      { title: 'Implement rate limiting on ingestion endpoints', type: IssueType.TASK, status: IssueStatus.INPROGRESS, priority: IssuePriority.HIGH, listPosition: 1 },
+      { title: 'Fix memory leak in stream processor', type: IssueType.BUG, status: IssueStatus.INPROGRESS, priority: IssuePriority.HIGHEST, listPosition: 2 },
+      { title: 'Add distributed tracing with OpenTelemetry', type: IssueType.STORY, status: IssueStatus.SELECTED, priority: IssuePriority.MEDIUM, listPosition: 3 },
+      { title: 'Upgrade Kafka client to v3.x', type: IssueType.TASK, status: IssueStatus.BACKLOG, priority: IssuePriority.LOW, listPosition: 4 },
+      { title: 'Write load tests for analytics aggregation', type: IssueType.TASK, status: IssueStatus.BACKLOG, priority: IssuePriority.MEDIUM, listPosition: 5 },
+      { title: 'Dashboard query response time exceeds 2s', type: IssueType.BUG, status: IssueStatus.SELECTED, priority: IssuePriority.HIGH, listPosition: 6 },
+      { title: 'Add pagination to /events endpoint', type: IssueType.TASK, status: IssueStatus.DONE, priority: IssuePriority.LOW, listPosition: 7 },
+      { title: 'Set up staging environment auto-deploy', type: IssueType.STORY, status: IssueStatus.DONE, priority: IssuePriority.MEDIUM, listPosition: 8 },
+    ],
+  },
+  {
+    name: 'Brand Evolution',
+    description:
+      'Company-wide rebranding initiative covering visual identity, design system, and cross-platform asset rollout.',
+    category: ProjectCategory.BUSINESS,
+    users: [
+      { name: 'Priya Nair', email: 'priya@brand.demo', avatarUrl: 'https://i.pravatar.cc/150?img=24' },
+      { name: 'James Okafor', email: 'james@brand.demo', avatarUrl: 'https://i.pravatar.cc/150?img=33' },
+      { name: 'Elena Sousa', email: 'elena@brand.demo', avatarUrl: 'https://i.pravatar.cc/150?img=5' },
+      { name: 'Tom Huang', email: 'tom@brand.demo', avatarUrl: 'https://i.pravatar.cc/150?img=65' },
+    ],
+    issues: [
+      { title: 'Finalize new logo lockup variants', type: IssueType.TASK, status: IssueStatus.DONE, priority: IssuePriority.HIGHEST, listPosition: 1 },
+      { title: 'Update color palette in design tokens', type: IssueType.TASK, status: IssueStatus.DONE, priority: IssuePriority.HIGH, listPosition: 2 },
+      { title: 'Refresh brand guidelines document', type: IssueType.STORY, status: IssueStatus.INPROGRESS, priority: IssuePriority.HIGH, listPosition: 3 },
+      { title: 'Migrate Figma component library to new tokens', type: IssueType.TASK, status: IssueStatus.INPROGRESS, priority: IssuePriority.MEDIUM, listPosition: 4 },
+      { title: 'Old logo still visible in email footer', type: IssueType.BUG, status: IssueStatus.SELECTED, priority: IssuePriority.HIGH, listPosition: 5 },
+      { title: 'Social media header assets for all platforms', type: IssueType.TASK, status: IssueStatus.BACKLOG, priority: IssuePriority.MEDIUM, listPosition: 6 },
+      { title: 'Stakeholder review presentation deck', type: IssueType.STORY, status: IssueStatus.BACKLOG, priority: IssuePriority.LOW, listPosition: 7 },
+    ],
+  },
+  {
+    name: 'Campaign Nexus',
+    description:
+      'Integrated digital marketing platform for multi-channel campaign orchestration, A/B testing, and attribution.',
+    category: ProjectCategory.MARKETING,
+    users: [
+      { name: 'Isla Martins', email: 'isla@nexus.demo', avatarUrl: 'https://i.pravatar.cc/150?img=1' },
+      { name: 'Devon Park', email: 'devon@nexus.demo', avatarUrl: 'https://i.pravatar.cc/150?img=8' },
+      { name: 'Cleo Briggs', email: 'cleo@nexus.demo', avatarUrl: 'https://i.pravatar.cc/150?img=49' },
+      { name: 'Rayan Johal', email: 'rayan@nexus.demo', avatarUrl: 'https://i.pravatar.cc/150?img=56' },
+      { name: 'Zoe Fischer', email: 'zoe@nexus.demo', avatarUrl: 'https://i.pravatar.cc/150?img=2' },
+    ],
+    issues: [
+      { title: 'A/B test email subject lines for Q2 campaign', type: IssueType.STORY, status: IssueStatus.INPROGRESS, priority: IssuePriority.HIGH, listPosition: 1 },
+      { title: 'UTM parameter tracking broken on iOS', type: IssueType.BUG, status: IssueStatus.INPROGRESS, priority: IssuePriority.HIGHEST, listPosition: 2 },
+      { title: 'Build attribution model for paid social', type: IssueType.STORY, status: IssueStatus.SELECTED, priority: IssuePriority.HIGH, listPosition: 3 },
+      { title: 'Segment audience by lifetime value tiers', type: IssueType.TASK, status: IssueStatus.SELECTED, priority: IssuePriority.MEDIUM, listPosition: 4 },
+      { title: 'Integrate HubSpot webhook for lead scoring', type: IssueType.TASK, status: IssueStatus.BACKLOG, priority: IssuePriority.MEDIUM, listPosition: 5 },
+      { title: 'Create retargeting pixel placement guide', type: IssueType.TASK, status: IssueStatus.BACKLOG, priority: IssuePriority.LOW, listPosition: 6 },
+      { title: 'Weekly email performance report automation', type: IssueType.TASK, status: IssueStatus.DONE, priority: IssuePriority.MEDIUM, listPosition: 7 },
+      { title: 'Decommission legacy campaign tracking sheet', type: IssueType.TASK, status: IssueStatus.DONE, priority: IssuePriority.LOW, listPosition: 8 },
+      { title: 'Landing page CTA copy refresh', type: IssueType.STORY, status: IssueStatus.BACKLOG, priority: IssuePriority.MEDIUM, listPosition: 9 },
+    ],
+  },
+];
+
+const ensureCompanionProjects = async (): Promise<void> => {
+  for (const data of companionProjectsData) {
+    const existing = await prisma.project.findFirst({ where: { name: data.name } });
+    if (existing) continue;
+
+    const project = await prisma.project.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        users: {
+          create: data.users.map(u => ({ name: u.name, email: u.email, avatarUrl: u.avatarUrl })),
+        },
+      },
+      include: { users: true },
+    });
+
+    const reporter = project.users[0];
+    await Promise.all(
+      data.issues.map((issue, idx) =>
+        prisma.issue.create({
+          data: {
+            title: issue.title,
+            type: issue.type,
+            status: issue.status,
+            priority: issue.priority,
+            listPosition: idx + 1,
+            projectId: project.id,
+            reporterId: reporter.id,
+          },
+        }),
+      ),
+    );
+  }
+};
+
+export { ensureCompanionProjects };
 export default ensureDemoProject;
