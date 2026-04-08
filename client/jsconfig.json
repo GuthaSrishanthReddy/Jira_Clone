@@ -1,8 +1,12 @@
 // This config allows VSCode intellisense to work with absolute "src" imports and jsx files
 {
   "compilerOptions": {
-    "baseUrl": "./src",
-    "jsx": "react"
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "jsx": "react",
+    "paths": {
+      "*": ["./src/*"]
+    }
   },
   "include": ["src/**/*", "cypress/**/*.js", "./node_modules/cypress"]
 }
