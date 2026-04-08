@@ -75,9 +75,9 @@ export const triggerScan = catchErrors(async (req, res) => {
   }
 
   // Run scan — responds immediately with the count of findings
-  const findingCount = await runScan(projectId);
+  const result = await runScan(projectId);
 
-  res.respond({ findingCount });
+  res.respond(result);
 });
 
 // Trigger a one-time full repo scan (walks all code files)
@@ -97,9 +97,9 @@ export const triggerFullScan = catchErrors(async (req, res) => {
     });
   }
 
-  const findingCount = await runFullScan(projectId);
+  const result = await runFullScan(projectId);
 
-  res.respond({ findingCount });
+  res.respond(result);
 });
 
 // Get findings for the current project — critical first, then by recency
@@ -110,6 +110,7 @@ export const getFindings = catchErrors(async (req, res) => {
   const findings = await prisma.repoFinding.findMany({
     where: {
       projectId,
+      issueId: null,
       ...(scanId ? { scanId: Number(scanId) } : {}),
     },
     orderBy: { createdAt: 'desc' },

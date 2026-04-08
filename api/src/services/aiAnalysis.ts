@@ -1,3 +1,4 @@
+import Anthropic from '@anthropic-ai/sdk';
 import { CustomError } from 'errors';
 import type { CommitInfo, PullRequestDiff, RepoFile } from './github';
 
@@ -12,7 +13,7 @@ export type RawFinding = {
   shouldCreateIssue: boolean;
 };
 
-const DEFAULT_MODEL = 'gemini-2.0-flash';
+const DEFAULT_MODEL = 'claude-sonnet-4-6';
 
 /**
  * Build a condensed diff payload to send to the AI.
@@ -81,17 +82,17 @@ ${diffPayload}
 `;
 
 /**
- * Send diffs to the Gemini AI and return structured bug findings.
+ * Send diffs to Claude and return structured bug findings.
  */
 export const analyzeCodeDiffs = async (
   commits: CommitInfo[],
   prs: PullRequestDiff[],
   projectName: string,
 ): Promise<RawFinding[]> => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.CLAUDE_API_KEY;
   if (!apiKey) {
     throw new CustomError(
-      'GenAI is not configured. Add GEMINI_API_KEY to api/.env.',
+      'GenAI is not configured. Add CLAUDE_API_KEY to api/.env.',
       'GEN_AI_NOT_CONFIGURED',
       503,
     );
@@ -100,39 +101,16 @@ export const analyzeCodeDiffs = async (
   const diffPayload = buildDiffPayload(commits, prs);
   if (!diffPayload.trim()) return [];
 
-  const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        generationConfig: {
-          temperature: 0.2,
-          responseMimeType: 'application/json',
-        },
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: buildPrompt(diffPayload, projectName) }],
-          },
-        ],
-      }),
-    },
-  );
+  const model = process.env.CLAUDE_MODEL || DEFAULT_MODEL;
+  const client = new Anthropic({ apiKey });
 
-  const payload: any = await response.json();
+  const message = await client.messages.create({
+    model,
+    max_tokens: 4096,
+    messages: [{ role: 'user', content: buildPrompt(diffPayload, projectName) }],
+  });
 
-  if (!response.ok) {
-    throw new CustomError(
-      payload?.error?.message || 'AI analysis request failed.',
-      'GEN_AI_REQUEST_FAILED',
-      response.status,
-    );
-  }
-
-  const text: string =
-    payload?.candidates?.[0]?.content?.parts?.find((p: { text?: string }) => p.text)?.text ?? '';
+  const text = message.content.find(block => block.type === 'text')?.text ?? '';
 
   if (!text.trim()) return [];
 
@@ -189,10 +167,10 @@ export const analyzeFileContents = async (
   files: RepoFile[],
   projectName: string,
 ): Promise<RawFinding[]> => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.CLAUDE_API_KEY;
   if (!apiKey) {
     throw new CustomError(
-      'GenAI is not configured. Add GEMINI_API_KEY to api/.env.',
+      'GenAI is not configured. Add CLAUDE_API_KEY to api/.env.',
       'GEN_AI_NOT_CONFIGURED',
       503,
     );
@@ -200,41 +178,20 @@ export const analyzeFileContents = async (
 
   if (files.length === 0) return [];
 
-  const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+  const model = process.env.CLAUDE_MODEL || DEFAULT_MODEL;
+  const client = new Anthropic({ apiKey });
   const allFindings: RawFinding[] = [];
 
   for (let i = 0; i < files.length; i += CHUNK_SIZE) {
     const chunk = files.slice(i, i + CHUNK_SIZE);
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          generationConfig: { temperature: 0.2, responseMimeType: 'application/json' },
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: buildFullScanPrompt(chunk, projectName) }],
-            },
-          ],
-        }),
-      },
-    );
+    const message = await client.messages.create({
+      model,
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: buildFullScanPrompt(chunk, projectName) }],
+    });
 
-    const payload: any = await response.json();
-
-    if (!response.ok) {
-      throw new CustomError(
-        payload?.error?.message || 'AI full-scan request failed.',
-        'GEN_AI_REQUEST_FAILED',
-        response.status,
-      );
-    }
-
-    const text: string =
-      payload?.candidates?.[0]?.content?.parts?.find((p: { text?: string }) => p.text)?.text ?? '';
+    const text = message.content.find(block => block.type === 'text')?.text ?? '';
 
     if (text.trim()) {
       allFindings.push(...parseFindings(text));

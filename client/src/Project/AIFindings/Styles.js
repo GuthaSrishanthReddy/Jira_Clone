@@ -95,6 +95,24 @@ export const FullScanBtn = styled.button`
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
+export const WarningBanner = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #FFF7ED;
+  border: 1px solid #FED7AA;
+  color: #9A3412;
+  ${font.size(13)}
+`;
+
+export const WarningIcon = styled.span`
+  flex-shrink: 0;
+  ${font.bold}
+`;
+
 // ─── Severity summary bar ────────────────────────────────────────────────────
 export const SummaryBar = styled.div`
   display: flex;

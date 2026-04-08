@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 
 import useApi from 'shared/hooks/api';
+import useCurrentUser from 'shared/hooks/currentUser';
 import api from 'shared/utils/api';
 import toast from 'shared/utils/toast';
-import { PageLoader, PageError } from 'shared/components';
+import { PageError } from 'shared/components';
 
 import {
   SEVERITY,
@@ -19,6 +20,8 @@ import {
   ScanMeta,
   ScanBtn,
   FullScanBtn,
+  WarningBanner,
+  WarningIcon,
   SummaryBar,
   SummaryCard,
   SummaryCount,
@@ -179,21 +182,28 @@ const FindingItem = ({ finding, users, selectedAssigneeId, onSelectAssignee, onA
 
 // ─── Main component ───────────────────────────────────────────────────────────
 const AIFindings = ({ project }) => {
+  const { currentUser } = useCurrentUser({ cachePolicy: 'no-cache' });
   const [isScanning, setIsScanning] = useState(false);
   const [isFullScanning, setIsFullScanning] = useState(false);
   const [promotingId, setPromotingId] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [scanWarning, setScanWarning] = useState(null);
   // { [findingId]: userId | null }
   const [assigneeMap, setAssigneeMap] = useState({});
+  const isManager = currentUser?.role === 'manager';
 
   const [{ data: findingsData, error: findingsError, setLocalData: setFindingsData }, refetchFindings] =
-    useApi.get('/project/github/findings');
+    useApi.get('/project/github/findings', {}, { lazy: !isManager, cachePolicy: 'no-cache' });
   const [{ data: scansData }, refetchScans] =
-    useApi.get('/project/github/scans');
+    useApi.get('/project/github/scans', {}, { lazy: !isManager, cachePolicy: 'no-cache' });
 
   const isConfigured = !!(project.githubRepoOwner && project.githubRepoName);
   const findings = findingsData?.findings ?? [];
-  const latestScan = scansData?.scans?.[0];
+  const completedScans = useMemo(
+    () => (scansData?.scans ?? []).filter(scan => scan.status === 'completed'),
+    [scansData],
+  );
+  const latestScan = completedScans[0];
 
   // ── Severity counts ────────────────────────────────────────────────────────
   const counts = useMemo(() => {
@@ -217,11 +227,14 @@ const AIFindings = ({ project }) => {
     if (isScanning) return;
     setIsScanning(true);
     try {
-      const { data } = await api.post('/project/github/scan');
+      const result = await api.post('/project/github/scan');
+      const data = result;
+      setScanWarning(result.autoIssueWarning || null);
       toast.success(`Scan complete — ${data.findingCount} finding(s) found.`);
       refetchFindings();
       refetchScans();
     } catch (err) {
+      setScanWarning(null);
       toast.error(err?.error?.message || 'Scan failed. Check your GitHub settings.');
     } finally {
       setIsScanning(false);
@@ -236,11 +249,14 @@ const AIFindings = ({ project }) => {
     if (!confirmed) return;
     setIsFullScanning(true);
     try {
-      const { data } = await api.post('/project/github/scan/full');
+      const result = await api.post('/project/github/scan/full');
+      const data = result;
+      setScanWarning(result.autoIssueWarning || null);
       toast.success(`Full scan complete — ${data.findingCount} finding(s) found.`);
       refetchFindings();
       refetchScans();
     } catch (err) {
+      setScanWarning(null);
       toast.error(err?.message || 'Full scan failed.');
     } finally {
       setIsFullScanning(false);
@@ -276,6 +292,33 @@ const AIFindings = ({ project }) => {
     setAssigneeMap(prev => ({ ...prev, [findingId]: userId }));
 
   if (findingsError) return <PageError />;
+
+  if (!isManager) {
+    return (
+      <Page>
+        <PageHeader>
+          <TitleSection>
+            <PageTitle>
+              <AiIcon>
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="white">
+                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 14.094A5.973 5.973 0 004 17v1H1v-1a3 3 0 013.75-2.906z"/>
+                </svg>
+              </AiIcon>
+              AI Bug Triage
+            </PageTitle>
+            <PageSubtitle>
+              This area is available to project managers only.
+            </PageSubtitle>
+          </TitleSection>
+        </PageHeader>
+
+        <EmptyState>
+          <EmptyIcon>Restricted</EmptyIcon>
+          You can view project work, but GitHub scanning and AI triage require a manager role.
+        </EmptyState>
+      </Page>
+    );
+  }
 
   const isBusy = isScanning || isFullScanning;
 
@@ -315,6 +358,13 @@ const AIFindings = ({ project }) => {
       </PageHeader>
 
       {/* ── Severity summary cards ── */}
+      {scanWarning && (
+        <WarningBanner>
+          <WarningIcon>!</WarningIcon>
+          <div>{scanWarning}</div>
+        </WarningBanner>
+      )}
+
       <SummaryBar>
         {SEVERITIES.map(sev => (
           <SummaryCard
@@ -375,11 +425,11 @@ const AIFindings = ({ project }) => {
       )}
 
       {/* ── Scan history ── */}
-      {scansData?.scans?.length > 0 && (
+      {completedScans.length > 0 && (
         <HistorySection>
           <HistoryTitle>Scan History</HistoryTitle>
           <HistoryList>
-            {scansData.scans.map(scan => (
+            {completedScans.map(scan => (
               <HistoryRow key={scan.id}>
                 <ScanStatus $status={scan.status}>{scan.status}</ScanStatus>
                 {scan.isFullScan && (
@@ -388,7 +438,6 @@ const AIFindings = ({ project }) => {
                 <ScanText>{moment(scan.startedAt).format('MMM D, YYYY HH:mm')}</ScanText>
                 {scan.commitSha && <ScanText><code>{scan.commitSha.slice(0, 7)}</code></ScanText>}
                 <ScanText>{scan._count.findings} finding(s)</ScanText>
-                {scan.error && <ScanText style={{ color: '#EF4444' }}>{scan.error}</ScanText>}
               </HistoryRow>
             ))}
           </HistoryList>

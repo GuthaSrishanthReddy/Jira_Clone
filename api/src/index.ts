@@ -35,8 +35,8 @@ const initializeExpress = (): void => {
 };
 
 const initializeCronJobs = (): void => {
-  // Run AI repo scans every 30 minutes for all enabled projects
-  cron.schedule('*/30 * * * *', async () => {
+  // Run AI repo scans every 2 hours for all enabled projects
+  cron.schedule('0 */2 * * *', async () => {
     console.log('[Cron] Running scheduled AI repo scans...');
     try {
       await runAllEnabledScans();

@@ -1,3 +1,4 @@
+import Anthropic from '@anthropic-ai/sdk';
 import { CustomError } from 'errors';
 
 type GenerateIssueDraftInput = {
@@ -13,7 +14,7 @@ type IssueDraft = {
   description: string;
 };
 
-const DEFAULT_MODEL = 'gemini-2.0-flash';
+const DEFAULT_MODEL = 'claude-sonnet-4-6';
 
 export const generateIssueDraft = async ({
   prompt,
@@ -22,59 +23,31 @@ export const generateIssueDraft = async ({
   issueType,
   priority,
 }: GenerateIssueDraftInput): Promise<IssueDraft> => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.CLAUDE_API_KEY;
 
   if (!apiKey) {
     throw new CustomError(
-      'GenAI is not configured. Add GEMINI_API_KEY to api/.env to enable AI issue drafting.',
+      'GenAI is not configured. Add CLAUDE_API_KEY to api/.env to enable AI issue drafting.',
       'GEN_AI_NOT_CONFIGURED',
       503,
     );
   }
 
-  const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        generationConfig: {
-          temperature: 0.6,
-          responseMimeType: 'application/json',
-        },
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              {
-                text: buildPrompt({
-                  prompt,
-                  projectName,
-                  projectDescription,
-                  issueType,
-                  priority,
-                }),
-              },
-            ],
-          },
-        ],
-      }),
-    },
-  );
+  const model = process.env.CLAUDE_MODEL || DEFAULT_MODEL;
+  const client = new Anthropic({ apiKey });
 
-  const payload: any = await response.json();
+  const message = await client.messages.create({
+    model,
+    max_tokens: 1024,
+    messages: [
+      {
+        role: 'user',
+        content: buildPrompt({ prompt, projectName, projectDescription, issueType, priority }),
+      },
+    ],
+  });
 
-  if (!response.ok) {
-    throw new CustomError(
-      payload?.error?.message || 'GenAI request failed.',
-      'GEN_AI_REQUEST_FAILED',
-      response.status,
-    );
-  }
-
-  const text = payload?.candidates?.[0]?.content?.parts?.find((part: { text?: string }) => part.text)
-    ?.text;
+  const text = message.content.find(block => block.type === 'text')?.text;
 
   if (!text) {
     throw new CustomError('GenAI returned an empty response.', 'GEN_AI_EMPTY_RESPONSE', 502);

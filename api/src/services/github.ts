@@ -59,8 +59,8 @@ export const getRepoInfo = async (
 };
 
 /**
- * Fetch commits made after `sinceSha` on the default branch.
- * If `sinceSha` is null, fetches only the latest commit.
+ * Fetch up to the latest 5 commits made after `sinceSha` on the branch.
+ * If `sinceSha` is null, fetches the latest 5 commits.
  */
 export const getCommitsSince = async (
   owner: string,
@@ -76,18 +76,19 @@ export const getCommitsSince = async (
     owner,
     repo,
     sha: branch,
-    per_page: sinceSha ? 30 : 1,
+    per_page: 5,
   });
 
   const commits = commitsResponse.data;
 
   // If we have a previous SHA, only process commits after it
-  const newCommits = sinceSha
-    ? commits.slice(
-        0,
-        commits.findIndex(c => c.sha === sinceSha),
-      )
-    : commits.slice(0, 1);
+  const previousCommitIndex = sinceSha
+    ? commits.findIndex(c => c.sha === sinceSha)
+    : -1;
+
+  const newCommits = previousCommitIndex >= 0
+    ? commits.slice(0, previousCommitIndex)
+    : commits.slice(0, 5);
 
   if (newCommits.length === 0) return [];
 

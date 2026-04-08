@@ -10,12 +10,101 @@ const SEVERITY_TO_PRIORITY: Record<string, string> = {
   low: IssuePriority.LOW,
 };
 
+type ScanResult = {
+  findingCount: number;
+  autoCreatedIssueCount: number;
+  autoIssueWarning: string | null;
+};
+
+const buildFindingDescription = (finding: {
+  filePath: string;
+  reason: string;
+  suggestedFix: string | null;
+}) => ({
+  description: `<p><strong>File:</strong> ${finding.filePath}</p><p>${finding.reason}</p>${finding.suggestedFix ? `<p><strong>Suggested fix:</strong> ${finding.suggestedFix}</p>` : ''}`,
+  descriptionText: `File: ${finding.filePath}\n${finding.reason}${finding.suggestedFix ? `\nSuggested fix: ${finding.suggestedFix}` : ''}`,
+});
+
+const autoCreateIssuesForFindings = async (
+  projectId: number,
+  findings: Array<{
+    id: number;
+    title: string;
+    severity: string;
+    filePath: string;
+    reason: string;
+    suggestedFix: string | null;
+    shouldCreateIssue: boolean;
+  }>,
+): Promise<{ autoCreatedIssueCount: number; autoIssueWarning: string | null }> => {
+  const findingsToPromote = findings.filter(finding => finding.shouldCreateIssue);
+  if (findingsToPromote.length === 0) {
+    return { autoCreatedIssueCount: 0, autoIssueWarning: null };
+  }
+
+  const firstUser = await prisma.user.findFirst({ where: { projectId } });
+  if (!firstUser) {
+    return {
+      autoCreatedIssueCount: 0,
+      autoIssueWarning: `Found ${findingsToPromote.length} issue-worthy finding(s), but none were added to the board because the project has no users.`,
+    };
+  }
+
+  let autoCreatedIssueCount = 0;
+  let skippedIssueCount = 0;
+
+  for (const finding of findingsToPromote) {
+    try {
+      const existingIssues = await prisma.issue.findMany({
+        where: { projectId, status: IssueStatus.BACKLOG },
+        select: { listPosition: true },
+      });
+      const maxPos = existingIssues.length > 0
+        ? Math.max(...existingIssues.map(issue => issue.listPosition))
+        : 0;
+      const { description, descriptionText } = buildFindingDescription(finding);
+
+      const issue = await prisma.issue.create({
+        data: {
+          title: finding.title,
+          type: IssueType.BUG,
+          status: IssueStatus.BACKLOG,
+          priority: SEVERITY_TO_PRIORITY[finding.severity] ?? IssuePriority.MEDIUM,
+          listPosition: maxPos + 1,
+          description,
+          descriptionText,
+          reporterId: firstUser.id,
+          projectId,
+        },
+      });
+
+      await prisma.repoFinding.update({
+        where: { id: finding.id },
+        data: { issueId: issue.id },
+      });
+
+      autoCreatedIssueCount++;
+    } catch (err) {
+      skippedIssueCount++;
+      console.error(`[RepoScanner] Failed to auto-create issue for finding ${finding.id}:`, err);
+    }
+  }
+
+  return {
+    autoCreatedIssueCount,
+    autoIssueWarning:
+      skippedIssueCount > 0
+        ? `Saved ${findingsToPromote.length} issue-worthy finding(s), but only ${autoCreatedIssueCount} were added to the board. ${skippedIssueCount} could not be auto-created.`
+        : null,
+  };
+};
+
 /**
  * Run a full AI-powered repo scan for a project.
  * Creates a RepoScan record, fetches diffs, runs AI analysis,
  * stores findings, and auto-creates Issues for high-confidence findings.
  */
-export const runScan = async (projectId: number): Promise<number> => {
+export const runScan = async (projectId: number): Promise<ScanResult> => {
   const project = await prisma.project.findUnique({ where: { id: projectId } });
 
   const token = project?.githubAccessToken || process.env.GITHUB_TOKEN;
@@ -75,46 +164,10 @@ export const runScan = async (projectId: number): Promise<number> => {
 
     // Auto-create Issues for findings where shouldCreateIssue = true
     // We need a reporter — use the first user in the project
-    const firstUser = await prisma.user.findFirst({ where: { projectId } });
-
-    if (firstUser) {
-      for (const finding of findingRecords) {
-        if (!finding.shouldCreateIssue) continue;
-
-        // Calculate list position (place at end of backlog)
-        const existingIssues = await prisma.issue.findMany({
-          where: { projectId, status: IssueStatus.BACKLOG },
-          select: { listPosition: true },
-        });
-        const maxPos = existingIssues.length > 0
-          ? Math.max(...existingIssues.map(i => i.listPosition))
-          : 0;
-        const listPosition = maxPos + 1;
-
-        const description = `<p><strong>File:</strong> ${finding.filePath}</p><p>${finding.reason}</p>${finding.suggestedFix ? `<p><strong>Suggested fix:</strong> ${finding.suggestedFix}</p>` : ''}`;
-        const descriptionText = `File: ${finding.filePath}\n${finding.reason}${finding.suggestedFix ? `\nSuggested fix: ${finding.suggestedFix}` : ''}`;
-
-        const issue = await prisma.issue.create({
-          data: {
-            title: finding.title,
-            type: IssueType.BUG,
-            status: IssueStatus.BACKLOG,
-            priority: SEVERITY_TO_PRIORITY[finding.severity] ?? IssuePriority.MEDIUM,
-            listPosition,
-            description,
-            descriptionText,
-            reporterId: firstUser.id,
-            projectId,
-          },
-        });
-
-        // Link the finding to the created issue
-        await prisma.repoFinding.update({
-          where: { id: finding.id },
-          data: { issueId: issue.id },
-        });
-      }
-    }
+    const { autoCreatedIssueCount, autoIssueWarning } = await autoCreateIssuesForFindings(
+      projectId,
+      findingRecords,
+    );
 
     // Mark scan completed and update lastScannedCommitSha
     await prisma.repoScan.update({
@@ -133,7 +186,11 @@ export const runScan = async (projectId: number): Promise<number> => {
       });
     }
 
-    return findingRecords.length;
+    return {
+      findingCount: findingRecords.length,
+      autoCreatedIssueCount,
+      autoIssueWarning,
+    };
   } catch (err) {
     await prisma.repoScan.update({
       where: { id: scan.id },
@@ -151,7 +208,7 @@ export const runScan = async (projectId: number): Promise<number> => {
  * Run a one-time full repo scan — walks all code files, sends them to AI in
  * chunks, stores findings, and auto-creates Issues for high-confidence ones.
  */
-export const runFullScan = async (projectId: number): Promise<number> => {
+export const runFullScan = async (projectId: number): Promise<ScanResult> => {
   const project = await prisma.project.findUnique({ where: { id: projectId } });
 
   const token = project?.githubAccessToken || process.env.GITHUB_TOKEN;
@@ -200,43 +257,10 @@ export const runFullScan = async (projectId: number): Promise<number> => {
       ),
     );
 
-    const firstUser = await prisma.user.findFirst({ where: { projectId } });
-
-    if (firstUser) {
-      for (const finding of findingRecords) {
-        if (!finding.shouldCreateIssue) continue;
-
-        const existingIssues = await prisma.issue.findMany({
-          where: { projectId, status: IssueStatus.BACKLOG },
-          select: { listPosition: true },
-        });
-        const maxPos = existingIssues.length > 0
-          ? Math.max(...existingIssues.map(i => i.listPosition))
-          : 0;
-
-        const description = `<p><strong>File:</strong> ${finding.filePath}</p><p>${finding.reason}</p>${finding.suggestedFix ? `<p><strong>Suggested fix:</strong> ${finding.suggestedFix}</p>` : ''}`;
-        const descriptionText = `File: ${finding.filePath}\n${finding.reason}${finding.suggestedFix ? `\nSuggested fix: ${finding.suggestedFix}` : ''}`;
-
-        const issue = await prisma.issue.create({
-          data: {
-            title: finding.title,
-            type: IssueType.BUG,
-            status: IssueStatus.BACKLOG,
-            priority: SEVERITY_TO_PRIORITY[finding.severity] ?? IssuePriority.MEDIUM,
-            listPosition: maxPos + 1,
-            description,
-            descriptionText,
-            reporterId: firstUser.id,
-            projectId,
-          },
-        });
-
-        await prisma.repoFinding.update({
-          where: { id: finding.id },
-          data: { issueId: issue.id },
-        });
-      }
-    }
+    const { autoCreatedIssueCount, autoIssueWarning } = await autoCreateIssuesForFindings(
+      projectId,
+      findingRecords,
+    );
 
     const latestSha = await getLatestCommitSha(owner, repo, branch, token);
 
@@ -252,7 +276,11 @@ export const runFullScan = async (projectId: number): Promise<number> => {
       });
     }
 
-    return findingRecords.length;
+    return {
+      findingCount: findingRecords.length,
+      autoCreatedIssueCount,
+      autoIssueWarning,
+    };
   } catch (err) {
     await prisma.repoScan.update({
       where: { id: scan.id },
