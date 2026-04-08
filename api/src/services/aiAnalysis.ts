@@ -121,7 +121,7 @@ export const analyzeCodeDiffs = async (
     },
   );
 
-  const payload = await response.json();
+  const payload: any = await response.json();
 
   if (!response.ok) {
     throw new CustomError(
@@ -223,7 +223,7 @@ export const analyzeFileContents = async (
       },
     );
 
-    const payload = await response.json();
+    const payload: any = await response.json();
 
     if (!response.ok) {
       throw new CustomError(

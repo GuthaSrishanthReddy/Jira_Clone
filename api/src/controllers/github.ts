@@ -68,7 +68,7 @@ export const triggerScan = catchErrors(async (req, res) => {
 
   if (!project) throw new EntityNotFoundError('Project');
 
-  if (!project.githubRepoOwner || !project.githubRepoName || !project.githubAccessToken) {
+  if (!project.githubRepoOwner || !project.githubRepoName || (!project.githubAccessToken && !process.env.GITHUB_TOKEN)) {
     throw new BadUserInputError({
       message: 'GitHub integration is not fully configured. Add repo owner, name, and access token.',
     });
@@ -91,7 +91,7 @@ export const triggerFullScan = catchErrors(async (req, res) => {
 
   if (!project) throw new EntityNotFoundError('Project');
 
-  if (!project.githubRepoOwner || !project.githubRepoName || !project.githubAccessToken) {
+  if (!project.githubRepoOwner || !project.githubRepoName || (!project.githubAccessToken && !process.env.GITHUB_TOKEN)) {
     throw new BadUserInputError({
       message: 'GitHub integration is not fully configured. Add repo owner, name, and access token.',
     });

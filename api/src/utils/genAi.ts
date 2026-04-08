@@ -63,7 +63,7 @@ export const generateIssueDraft = async ({
     },
   );
 
-  const payload = await response.json();
+  const payload: any = await response.json();
 
   if (!response.ok) {
     throw new CustomError(

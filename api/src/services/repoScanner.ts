@@ -18,16 +18,18 @@ const SEVERITY_TO_PRIORITY: Record<string, string> = {
 export const runScan = async (projectId: number): Promise<number> => {
   const project = await prisma.project.findUnique({ where: { id: projectId } });
 
+  const token = project?.githubAccessToken || process.env.GITHUB_TOKEN;
+
   if (
     !project ||
     !project.githubRepoOwner ||
     !project.githubRepoName ||
-    !project.githubAccessToken
+    !token
   ) {
     throw new Error(`Project ${projectId} is missing GitHub configuration.`);
   }
 
-  const { githubRepoOwner: owner, githubRepoName: repo, githubDefaultBranch: configuredBranch, githubAccessToken: token, lastScannedCommitSha } = project;
+  const { githubRepoOwner: owner, githubRepoName: repo, githubDefaultBranch: configuredBranch, lastScannedCommitSha } = project;
 
   // Verify access and get the real default branch from GitHub
   // This catches 404/401 before creating the scan record
@@ -152,16 +154,18 @@ export const runScan = async (projectId: number): Promise<number> => {
 export const runFullScan = async (projectId: number): Promise<number> => {
   const project = await prisma.project.findUnique({ where: { id: projectId } });
 
+  const token = project?.githubAccessToken || process.env.GITHUB_TOKEN;
+
   if (
     !project ||
     !project.githubRepoOwner ||
     !project.githubRepoName ||
-    !project.githubAccessToken
+    !token
   ) {
     throw new Error(`Project ${projectId} is missing GitHub configuration.`);
   }
 
-  const { githubRepoOwner: owner, githubRepoName: repo, githubDefaultBranch: configuredBranch, githubAccessToken: token } = project;
+  const { githubRepoOwner: owner, githubRepoName: repo, githubDefaultBranch: configuredBranch } = project;
 
   const repoInfo = await getRepoInfo(owner, repo, token);
   const branch = configuredBranch && configuredBranch !== 'main'
@@ -241,6 +245,13 @@ export const runFullScan = async (projectId: number): Promise<number> => {
       data: { status: 'completed', completedAt: new Date(), commitSha: latestSha },
     });
 
+    if (latestSha) {
+      await prisma.project.update({
+        where: { id: projectId },
+        data: { lastScannedCommitSha: latestSha },
+      });
+    }
+
     return findingRecords.length;
   } catch (err) {
     await prisma.repoScan.update({
@@ -260,12 +271,14 @@ export const runFullScan = async (projectId: number): Promise<number> => {
  * Called by the background cron job.
  */
 export const runAllEnabledScans = async (): Promise<void> => {
+  const hasEnvToken = !!process.env.GITHUB_TOKEN;
   const projects = await prisma.project.findMany({
     where: {
       aiBugMonitoringEnabled: true,
       githubRepoOwner: { not: null },
       githubRepoName: { not: null },
-      githubAccessToken: { not: null },
+      // If a fallback env token exists, include projects without a per-project token
+      ...(hasEnvToken ? {} : { githubAccessToken: { not: null } }),
     },
     select: { id: true },
   });

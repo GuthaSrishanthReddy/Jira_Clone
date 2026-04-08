@@ -5,5 +5,6 @@ declare namespace NodeJS {
     JWT_SECRET: string;
     GEMINI_API_KEY?: string;
     GEMINI_MODEL?: string;
+    GITHUB_TOKEN?: string;
   }
 }
