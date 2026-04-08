@@ -4,8 +4,8 @@
 
 <h3 align="center">
   <a href="https://jira.ivorreic.com/">Visit the live app</a> |
-  <a href="https://github.com/oldboyxx/jira_clone/tree/master/client">View client</a> |
-  <a href="https://github.com/guthasrishanthreddy/jira-clone">View API</a>
+  <a href="https://github.com/guthasrishanthreddy/Jira_Clonetree/master/client">View client</a> |
+  <a href="https://github.com/GuthaSrishanthReddy/Jira_Clone">View API</a>
 </h3>
 
 ![Tech logos](https://i.ibb.co/DVFj8PL/tech-icons.jpg)
@@ -31,7 +31,7 @@ There are many showcase/example React projects out there but most of them are wa
 ## Setting up development environment 🛠
 
 - Install [postgreSQL](https://www.postgresql.org/) if you don't have it already and create a database named `jira_development`.
-- `git clone https://github.com/oldboyxx/jira_clone.git`
+- `git clone https://github.com/GuthaSrishanthReddy/Jira_Clone.git`
 - Create an empty `.env` file in `/api`, copy `/api/.env.example` contents into it, and fill in your database username and password.
 - `npm run install-dependencies`
 - `cd api && npm start`
@@ -62,7 +62,7 @@ Not all components have properly defined [aria attributes](https://developer.moz
 
 ### Unit/Integration tests 🧪
 
-Both Client and API are currently tested through [end-to-end Cypress tests](https://github.com/oldboyxx/jira_clone/tree/master/client/cypress/integration). That's good enough for a relatively simple application such as this, even if it was a real product. However, as the app grows in complexity, it might be wise to start writing additional unit/integration tests.
+Both Client and API are currently tested through [end-to-end Cypress tests](https://github.com/guthasrishanthreddy/Jira_Clonetree/master/client/cypress/integration). That's good enough for a relatively simple application such as this, even if it was a real product. However, as the app grows in complexity, it might be wise to start writing additional unit/integration tests.
 
 ## Contributing
 
@@ -76,6 +76,6 @@ I will not be accepting PR's on this repository. Feel free to fork and maintain 
 
 <h3>
   <a href="https://jira.ivorreic.com/">Visit the live app</a> |
-  <a href="https://github.com/oldboyxx/jira_clone/tree/master/client">View client</a> |
-  <a href="https://github.com/guthasrishanthreddy/jira-clone">View API</a>
+  <a href="https://github.com/guthasrishanthreddy/Jira_Clonetree/master/client">View client</a> |
+  <a href="https://github.com/GuthaSrishanthReddy/Jira_Clone">View API</a>
 </h3>
