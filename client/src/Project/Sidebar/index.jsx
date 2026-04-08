@@ -22,6 +22,11 @@ const propTypes = {
 
 const ProjectSidebar = ({ project }) => (
   <Sidebar>
+    <LinkItem as={NavLink} to="/projects" style={{ margin: '8px 8px 0', color: '#94A3B8', fontSize: 12 }}>
+      <Icon type="chevron-left" size={14} />
+      <LinkText style={{ fontSize: 12, color: '#94A3B8' }}>All projects</LinkText>
+    </LinkItem>
+
     <ProjectInfo>
       <ProjectAvatar />
       <ProjectTexts>
@@ -34,12 +39,12 @@ const ProjectSidebar = ({ project }) => (
     {renderLinkItem('Activity', 'reports', '/project/activity')}
     <Divider />
     {renderLinkItem('Kanban Board', 'board', '/project/board')}
-    {renderLinkItem('Profile', 'user', '/project/profile')}
+    {renderLinkItem('Profile', 'feedback', '/project/profile')}
     {renderLinkItem('Project settings', 'settings', '/project/settings')}
     <Divider />
     {renderLinkItem('Issues and filters', 'issues', '/project/issues')}
     {renderLinkItem('Pages', 'page', '/project/pages')}
-    {renderLinkItem('Reports', 'reports', '/project/reports')}
+    {renderLinkItem('AI Findings', 'reports', '/project/reports')}
     {renderLinkItem('Components', 'component', '/project/components')}
   </Sidebar>
 );

@@ -81,7 +81,7 @@ const Authenticate = () => {
       setSubmitting(true);
       const { authToken } = await api.post('/authentication/login', { email: targetEmail });
       storeAuthToken(authToken);
-      navigate('/project');
+      navigate('/projects');
     } catch (error) {
       toast.error(error);
     } finally {
@@ -112,7 +112,7 @@ const Authenticate = () => {
         <TopbarActions>
           <SearchButton type="button">Search</SearchButton>
           {isAuthenticated ? (
-            <Button type="button" variant="primary" onClick={() => navigate('/project')}>
+            <Button type="button" variant="primary" onClick={() => navigate('/projects')}>
               Open app
             </Button>
           ) : (
@@ -149,7 +149,7 @@ const Authenticate = () => {
           </HeroText>
           <HeroActions>
             {isAuthenticated ? (
-              <Button type="button" variant="primary" onClick={() => navigate('/project')}>
+              <Button type="button" variant="primary" onClick={() => navigate('/projects')}>
                 Open workspace
               </Button>
             ) : (
@@ -162,7 +162,7 @@ const Authenticate = () => {
                 Start demo
               </Button>
             )}
-            <Button type="button" variant="secondary" onClick={() => navigate('/project')}>
+            <Button type="button" variant="secondary" onClick={() => navigate('/projects')}>
               Preview app
             </Button>
           </HeroActions>

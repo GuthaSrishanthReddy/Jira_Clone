@@ -15,6 +15,7 @@ import IssueSearch from './IssueSearch';
 import IssueCreate from './IssueCreate';
 import ProjectSettings from './ProjectSettings';
 import ProjectModules from './ProjectModules';
+import AIFindings from './AIFindings';
 import ProjectProfile from './Profile';
 import { ProjectPage } from './Styles';
 
@@ -123,10 +124,7 @@ const Project = () => {
         />
         <Route path="issues" element={<ProjectModules moduleId="issues" project={project} />} />
         <Route path="pages" element={<ProjectModules moduleId="pages" project={project} />} />
-        <Route
-          path="reports"
-          element={<ProjectModules moduleId="reports" project={project} />}
-        />
+        <Route path="reports" element={<AIFindings project={project} />} />
         <Route
           path="components"
           element={<ProjectModules moduleId="components" project={project} />}

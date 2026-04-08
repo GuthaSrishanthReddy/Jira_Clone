@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import Project from 'Project';
 import Authenticate from 'Auth/Authenticate';
+import ProjectsHub from 'ProjectsHub';
 import PageError from 'shared/components/PageError';
 
 const AppRoutes = () => (
@@ -10,6 +11,7 @@ const AppRoutes = () => (
     <Routes>
       <Route path="/" element={<Authenticate />} />
       <Route path="/authenticate" element={<Authenticate />} />
+      <Route path="/projects" element={<ProjectsHub />} />
       <Route path="/project/*" element={<Project />} />
       <Route path="*" element={<PageError />} />
     </Routes>

@@ -38,7 +38,7 @@ module.exports = {
     modules: [path.join(__dirname, 'src'), 'node_modules'],
     extensions: ['*', '.js', '.jsx'],
   },
-  devtool: 'eval-source-map',
+  devtool: 'eval-cheap-module-source-map',
   devServer: {
     static: path.join(__dirname, 'dev'),
     historyApiFallback: true,
