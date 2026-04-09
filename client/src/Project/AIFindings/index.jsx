@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
@@ -221,6 +221,13 @@ const AIFindings = ({ project }) => {
     if (filter === 'unassigned') return findings.filter(f => !f.issueId);
     return findings.filter(f => f.severity === filter);
   }, [findings, filter]);
+
+  useEffect(() => {
+    if (!isManager) return;
+
+    refetchFindings();
+    refetchScans();
+  }, [isManager, refetchFindings, refetchScans]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleScanNow = async () => {

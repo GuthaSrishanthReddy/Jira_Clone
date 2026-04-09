@@ -256,9 +256,6 @@ export const getFileContents = async (
   return results;
 };
 
-/**
- * Get the latest commit SHA on a branch.
- */
 export const getLatestCommitSha = async (
   owner: string,
   repo: string,

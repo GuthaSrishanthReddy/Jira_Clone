@@ -40,3 +40,60 @@ export const TokenHint = styled.p`
   color: ${color.textLight};
   ${font.size(12)}
 `;
+
+export const SectionCard = styled.section`
+  width: 100%;
+  max-width: 640px;
+`;
+
+export const SectionTop = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+`;
+
+export const EditAnchor = styled.a`
+  color: ${color.textDarkest};
+  ${font.size(13)}
+  ${font.medium}
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+export const SummaryCard = styled.div`
+  margin-top: 16px;
+  padding: 18px 20px;
+  border: 1px solid ${color.borderLight};
+  border-radius: 6px;
+  background: ${color.backgroundLightest};
+`;
+
+export const SummaryList = styled.div`
+  display: grid;
+  gap: 16px;
+`;
+
+export const SummaryItem = styled.div``;
+
+export const SummaryLabel = styled.div`
+  margin-bottom: 4px;
+  color: ${color.textMedium};
+  ${font.size(12)}
+  ${font.medium}
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+`;
+
+export const SummaryValue = styled.div`
+  color: ${color.textDarkest};
+  ${font.size(15)}
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+`;
