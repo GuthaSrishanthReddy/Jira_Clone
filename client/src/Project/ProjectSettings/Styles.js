@@ -97,3 +97,54 @@ export const SummaryValue = styled.div`
   word-break: break-word;
   white-space: pre-wrap;
 `;
+
+export const CheckboxRow = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  width: fit-content;
+`;
+
+export const CheckboxInput = styled.input`
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border: 2px solid ${color.borderLight};
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  position: relative;
+
+  &:checked {
+    background: ${color.primary};
+    border-color: ${color.primary};
+  }
+
+  &:checked::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 5px;
+    height: 9px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${color.borderInputFocus};
+    outline-offset: 2px;
+  }
+`;
+
+export const CheckboxLabel = styled.span`
+  color: ${color.textDark};
+  ${font.size(14)}
+  ${font.medium}
+`;

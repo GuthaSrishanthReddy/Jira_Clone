@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { groupBy, orderBy, sumBy } from 'lodash';
@@ -36,12 +36,23 @@ import {
   CardBody,
   List,
   ListItem,
+  SelectableListItem,
   Badge,
   MutedText,
   TeamList,
   TeamMember,
   TeamMeta,
   InlineMeta,
+  DetailCard,
+  DetailHeader,
+  DetailTitle,
+  DetailDescription,
+  DetailList,
+  DetailListItem,
+  DetailPrimary,
+  DetailTitleText,
+  DetailMeta,
+  DetailEmpty,
 } from './Styles';
 
 const propTypes = {
@@ -198,76 +209,221 @@ const IssuesModule = ({ project }) => {
   );
 };
 
-const PagesModule = ({ project }) => (
-  <Section>
-    <SectionTitle>Project pages</SectionTitle>
-    <Grid>
-      <Card>
-        <CardTitle>Project brief</CardTitle>
-        <CardBody>
-          {project.description ? (
-            <div dangerouslySetInnerHTML={{ __html: project.description }} />
-          ) : (
-            <MutedText>No project brief has been added yet.</MutedText>
-          )}
-        </CardBody>
-      </Card>
+const PagesModule = ({ project }) => {
+  const [activeWorkflowStatus, setActiveWorkflowStatus] = useState(IssueStatus.BACKLOG);
+  const [activeKnowledgeView, setActiveKnowledgeView] = useState('workflow');
 
-      <Card>
-        <CardTitle>Workflow notes</CardTitle>
-        <CardBody>
-          <List>
-            {Object.values(IssueStatus).map(status => (
-              <ListItem key={status}>
-                <span>{IssueStatusCopy[status]}</span>
-                <Badge>{countIssuesByStatus(project.issues, status)}</Badge>
-              </ListItem>
-            ))}
-          </List>
-        </CardBody>
-      </Card>
-    </Grid>
+  const workflowDetails = {
+    [IssueStatus.BACKLOG]: {
+      title: IssueStatusCopy[IssueStatus.BACKLOG],
+      description: 'Issues waiting in the backlog before they are selected for active work.',
+      items: project.issues.filter(issue => issue.status === IssueStatus.BACKLOG),
+    },
+    [IssueStatus.SELECTED]: {
+      title: IssueStatusCopy[IssueStatus.SELECTED],
+      description: 'Issues that are ready for development and queued for the team.',
+      items: project.issues.filter(issue => issue.status === IssueStatus.SELECTED),
+    },
+    [IssueStatus.INPROGRESS]: {
+      title: IssueStatusCopy[IssueStatus.INPROGRESS],
+      description: 'Issues that are actively being worked on right now.',
+      items: project.issues.filter(issue => issue.status === IssueStatus.INPROGRESS),
+    },
+    [IssueStatus.DONE]: {
+      title: IssueStatusCopy[IssueStatus.DONE],
+      description: 'Issues that have already been completed in this workspace.',
+      items: project.issues.filter(issue => issue.status === IssueStatus.DONE),
+    },
+  };
 
-    <Grid>
-      <Card>
-        <CardTitle>Team directory</CardTitle>
-        <CardBody>
-          <TeamList>
-            {project.users.map(user => (
-              <TeamMember key={user.id}>
-                <Avatar avatarUrl={user.avatarUrl} name={user.name} size={36} />
-                <TeamMeta>
-                  <strong>{user.name}</strong>
-                  <MutedText>{user.email}</MutedText>
-                </TeamMeta>
-              </TeamMember>
-            ))}
-          </TeamList>
-        </CardBody>
-      </Card>
+  const knowledgeDetails = {
+    workflow: {
+      title: 'Board workflow',
+      badge: `${project.issues.length} tracked issues`,
+      description: 'A quick snapshot of how work is distributed across the board workflow.',
+      items: Object.values(IssueStatus).map(status => ({
+        id: status,
+        title: IssueStatusCopy[status],
+        meta: `${countIssuesByStatus(project.issues, status)} issues`,
+      })),
+    },
+    category: {
+      title: 'Project category',
+      badge: project.category,
+      description: 'The category used to classify this demo project.',
+      items: [
+        {
+          id: 'category',
+          title: project.category,
+          meta: `${project.name} is grouped under this project type.`,
+        },
+      ],
+    },
+    team: {
+      title: 'Team members',
+      badge: `${project.users.length}`,
+      description: 'Everyone currently participating in this project.',
+      items: project.users,
+    },
+  };
 
-      <Card>
-        <CardTitle>Knowledge base</CardTitle>
-        <CardBody>
-          <List>
-            <ListItem>
-              <span>Board workflow</span>
-              <Badge>{`${project.issues.length} tracked issues`}</Badge>
-            </ListItem>
-            <ListItem>
-              <span>Project category</span>
-              <Badge>{project.category}</Badge>
-            </ListItem>
-            <ListItem>
-              <span>Team members</span>
-              <Badge>{project.users.length}</Badge>
-            </ListItem>
-          </List>
-        </CardBody>
-      </Card>
-    </Grid>
-  </Section>
-);
+  const activeWorkflow = workflowDetails[activeWorkflowStatus];
+  const activeKnowledge = knowledgeDetails[activeKnowledgeView];
+
+  return (
+    <Section>
+      <SectionTitle>Project pages</SectionTitle>
+      <Grid>
+        <Card>
+          <CardTitle>Project brief</CardTitle>
+          <CardBody>
+            {project.description ? (
+              <div dangerouslySetInnerHTML={{ __html: project.description }} />
+            ) : (
+              <MutedText>No project brief has been added yet.</MutedText>
+            )}
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardTitle>Workflow notes</CardTitle>
+          <CardBody>
+            <List>
+              {Object.values(IssueStatus).map(status => (
+                <SelectableListItem
+                  key={status}
+                  as="button"
+                  type="button"
+                  $isActive={activeWorkflowStatus === status}
+                  onClick={() => setActiveWorkflowStatus(status)}
+                >
+                  <span>{IssueStatusCopy[status]}</span>
+                  <Badge>{countIssuesByStatus(project.issues, status)}</Badge>
+                </SelectableListItem>
+              ))}
+            </List>
+
+            <DetailCard>
+              <DetailHeader>
+                <div>
+                  <DetailTitle>{activeWorkflow.title}</DetailTitle>
+                  <DetailDescription>{activeWorkflow.description}</DetailDescription>
+                </div>
+                <Badge>{activeWorkflow.items.length}</Badge>
+              </DetailHeader>
+
+              <DetailList>
+                {activeWorkflow.items.length > 0 ? (
+                  activeWorkflow.items.map(issue => (
+                    <DetailListItem key={issue.id}>
+                      <DetailPrimary>
+                        <DetailTitleText>{issue.title}</DetailTitleText>
+                        <DetailMeta>
+                          {`${IssueTypeCopy[issue.type]}-${issue.id}`}
+                          {issue.priority ? ` - ${IssuePriorityCopy[issue.priority]}` : ''}
+                        </DetailMeta>
+                      </DetailPrimary>
+                      <Badge>{IssueStatusCopy[issue.status]}</Badge>
+                    </DetailListItem>
+                  ))
+                ) : (
+                  <DetailEmpty>No issues are currently in this workflow stage.</DetailEmpty>
+                )}
+              </DetailList>
+            </DetailCard>
+          </CardBody>
+        </Card>
+      </Grid>
+
+      <Grid>
+        <Card>
+          <CardTitle>Team directory</CardTitle>
+          <CardBody>
+            <TeamList>
+              {project.users.map(user => (
+                <TeamMember key={user.id}>
+                  <Avatar avatarUrl={user.avatarUrl} name={user.name} size={36} />
+                  <TeamMeta>
+                    <strong>{user.name}</strong>
+                    <MutedText>{user.email}</MutedText>
+                  </TeamMeta>
+                </TeamMember>
+              ))}
+            </TeamList>
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardTitle>Knowledge base</CardTitle>
+          <CardBody>
+            <List>
+              <SelectableListItem
+                as="button"
+                type="button"
+                $isActive={activeKnowledgeView === 'workflow'}
+                onClick={() => setActiveKnowledgeView('workflow')}
+              >
+                <span>Board workflow</span>
+                <Badge>{`${project.issues.length} tracked issues`}</Badge>
+              </SelectableListItem>
+              <SelectableListItem
+                as="button"
+                type="button"
+                $isActive={activeKnowledgeView === 'category'}
+                onClick={() => setActiveKnowledgeView('category')}
+              >
+                <span>Project category</span>
+                <Badge>{project.category}</Badge>
+              </SelectableListItem>
+              <SelectableListItem
+                as="button"
+                type="button"
+                $isActive={activeKnowledgeView === 'team'}
+                onClick={() => setActiveKnowledgeView('team')}
+              >
+                <span>Team members</span>
+                <Badge>{project.users.length}</Badge>
+              </SelectableListItem>
+            </List>
+
+            <DetailCard>
+              <DetailHeader>
+                <div>
+                  <DetailTitle>{activeKnowledge.title}</DetailTitle>
+                  <DetailDescription>{activeKnowledge.description}</DetailDescription>
+                </div>
+                <Badge>{activeKnowledge.badge}</Badge>
+              </DetailHeader>
+
+              <DetailList>
+                {activeKnowledgeView === 'team' ? (
+                  activeKnowledge.items.map(member => (
+                    <DetailListItem key={member.id}>
+                      <DetailPrimary>
+                        <DetailTitleText>{member.name}</DetailTitleText>
+                        <DetailMeta>{member.email}</DetailMeta>
+                      </DetailPrimary>
+                      <Badge>{member.title}</Badge>
+                    </DetailListItem>
+                  ))
+                ) : (
+                  activeKnowledge.items.map(item => (
+                    <DetailListItem key={item.id}>
+                      <DetailPrimary>
+                        <DetailTitleText>{item.title}</DetailTitleText>
+                        <DetailMeta>{item.meta}</DetailMeta>
+                      </DetailPrimary>
+                    </DetailListItem>
+                  ))
+                )}
+              </DetailList>
+            </DetailCard>
+          </CardBody>
+        </Card>
+      </Grid>
+    </Section>
+  );
+};
 
 const ReportsModule = ({ project }) => {
   const estimateTotal = sumBy(project.issues, issue => issue.estimate || 0);

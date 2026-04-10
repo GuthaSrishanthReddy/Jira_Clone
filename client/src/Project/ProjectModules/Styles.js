@@ -140,6 +140,27 @@ export const ListItem = styled.div`
   background: ${color.backgroundLightest};
 `;
 
+export const SelectableListItem = styled(ListItem)`
+  width: 100%;
+  border: 1px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: #f3f7ff;
+    border-color: ${color.primary};
+    transform: translateY(-1px);
+  }
+
+  ${({ $isActive }) =>
+    $isActive &&
+    `
+      background: #edf4ff;
+      border-color: ${color.primary};
+    `}
+`;
+
 export const Badge = styled.span`
   display: inline-flex;
   align-items: center;
@@ -187,4 +208,75 @@ export const InlineMeta = styled.div`
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+`;
+
+export const DetailCard = styled.div`
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fbfdff 0%, #f4f8ff 100%);
+  border: 1px solid ${color.borderLightest};
+`;
+
+export const DetailHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+export const DetailTitle = styled.h5`
+  color: ${color.textDark};
+  ${font.size(15)}
+  ${font.bold}
+`;
+
+export const DetailDescription = styled.p`
+  margin-top: 4px;
+  color: ${color.textMedium};
+  ${font.size(13)}
+  line-height: 1.5;
+`;
+
+export const DetailList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+`;
+
+export const DetailListItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid ${color.borderLightest};
+`;
+
+export const DetailPrimary = styled.div`
+  min-width: 0;
+`;
+
+export const DetailTitleText = styled.div`
+  color: ${color.textDarkest};
+  ${font.size(13.5)}
+  ${font.bold}
+`;
+
+export const DetailMeta = styled.div`
+  margin-top: 4px;
+  color: ${color.textMedium};
+  ${font.size(12.5)}
+`;
+
+export const DetailEmpty = styled.div`
+  padding: 12px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px dashed ${color.borderLight};
+  color: ${color.textMedium};
+  ${font.size(13)}
 `;

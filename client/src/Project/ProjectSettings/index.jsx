@@ -22,6 +22,9 @@ import {
   SummaryLabel,
   SummaryValue,
   TokenHint,
+  CheckboxRow,
+  CheckboxInput,
+  CheckboxLabel,
 } from './Styles';
 
 const propTypes = {
@@ -249,43 +252,16 @@ const ProjectSettings = ({ project, fetchProject }) => {
                 </div>
 
                 <div>
-                  <button
-                    type="button"
-                    onClick={() => setMonitoringEnabled(current => !current)}
-                    onKeyDown={event => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        setMonitoringEnabled(current => !current);
-                      }
-                    }}
-                    aria-pressed={monitoringEnabled}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                      padding: 0,
-                      border: 0,
-                      background: 'transparent',
-                      color: 'inherit',
-                    }}
-                  >
-                    <input
+                  <CheckboxRow>
+                    <CheckboxInput
                       type="checkbox"
                       checked={monitoringEnabled}
-                      onChange={() => {}}
-                      readOnly
-                      tabIndex={-1}
-                      aria-hidden="true"
-                      style={{ width: 16, height: 16, pointerEvents: 'none' }}
+                      onChange={e => setMonitoringEnabled(e.target.checked)}
                     />
-                    <span>
-                      Enable AI Bug Monitoring
-                    </span>
-                  </button>
+                    <CheckboxLabel>Enable AI Bug Monitoring</CheckboxLabel>
+                  </CheckboxRow>
                   <TokenHint>
-                    When enabled, the repo is scanned automatically every 30 minutes. Repository owner and repository name must be filled in before this can be saved.
+                    When enabled, the repo is scanned automatically every 2 hours. Repository owner and repository name must be filled in before this can be saved.
                   </TokenHint>
                 </div>
 

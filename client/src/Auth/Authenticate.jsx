@@ -52,7 +52,7 @@ import {
 
 const Authenticate = () => {
   const navigate = useNavigate();
-  const [users, setUsers] = useState(null);
+  const [users, setUsers] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [isSubmitting, setSubmitting] = useState(false);
   const [email, setEmail] = useState('');
@@ -62,9 +62,10 @@ const Authenticate = () => {
     const loadUsers = async () => {
       try {
         const response = await api.get('/authentication/users');
-        setUsers(response.users);
-        if (response.users[0]) {
-          setEmail(response.users[0].email);
+        const nextUsers = Array.isArray(response?.users) ? response.users : [];
+        setUsers(nextUsers);
+        if (nextUsers[0]) {
+          setEmail(nextUsers[0].email);
         }
       } catch (error) {
         toast.error(error);
@@ -77,6 +78,10 @@ const Authenticate = () => {
   }, [navigate]);
 
   const handleLogin = async targetEmail => {
+    if (!targetEmail) {
+      return;
+    }
+
     try {
       setSubmitting(true);
       const { authToken } = await api.post('/authentication/login', { email: targetEmail });
@@ -116,14 +121,15 @@ const Authenticate = () => {
               Open app
             </Button>
           ) : (
-            <Button
-              type="button"
-              variant="primary"
-              onClick={() => handleLogin(email)}
-              isWorking={isSubmitting}
-            >
-              Get it free
-            </Button>
+              <Button
+                type="button"
+                variant="primary"
+                onClick={() => handleLogin(email)}
+                isWorking={isSubmitting}
+                disabled={!email}
+              >
+                Get it free
+              </Button>
           )}
           <SignInLink href="#login">Sign in</SignInLink>
         </TopbarActions>
@@ -158,6 +164,7 @@ const Authenticate = () => {
                 variant="primary"
                 onClick={() => handleLogin(email)}
                 isWorking={isSubmitting}
+                disabled={!email}
               >
                 Start demo
               </Button>
@@ -193,9 +200,9 @@ const Authenticate = () => {
               />
             </InputWrap>
 
-            <Button type="submit" variant="primary" isWorking={isSubmitting}>
-              Sign in
-            </Button>
+              <Button type="submit" variant="primary" isWorking={isSubmitting} disabled={!email}>
+                Sign in
+              </Button>
           </LoginForm>
 
           <Separator>
